@@ -19,6 +19,6 @@
     + My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority
 
 ## Notes
-I made the lambda using this [zappa tutorial](https://youtu.be/mjWV4R2P4ks "zappa tutorial")
-If you don't feel like going through all that, feel free to us this as your service endpoint: <https://y71c29qgr0.execute-api.us-east-1.amazonaws.com/dev>
+I made the lambda using this [zappa tutorial.](https://youtu.be/mjWV4R2P4ks "zappa tutorial")
+If you don't feel like going through all that, feel free to use this as your service endpoint: <https://y71c29qgr0.execute-api.us-east-1.amazonaws.com/dev>. It is the one I made.
 
