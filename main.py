@@ -1,16 +1,16 @@
 from flask import Flask
-from flask_ask import Ask, statement
+from flask_ask import Ask, statement, question
 
 app = Flask(__name__)
 ask = Ask(app, "/")
 
-steps = ["Step 1: Put the new staples in! Close the stapler with the new staples in it.",
+steps = ["Step 1: Stapler is empty. Find more staples",
 		"Step 2 : Put the new staples in! Close the stapler with the new staples in it.",
 		"Step 3 : Start stapling stuff!"]
-nosteps = "There are no previous instructions."
-donesteps = "You have completed the guide. Would you like to start a new project?"
+no_steps = "There are no previous instructions."
+done_steps = "You have completed the guide. Would you like to start a new project?"
 
-instructionnum = -1
+instruction_num = -1
 
 @ask.intent("HelloIntent")
 def hello():
@@ -18,12 +18,12 @@ def hello():
 
 @ask.launch
 def start_skill():
-    return statement("What do you want to fix today?")
+    return question("What do you want to fix today?").reprompt("I missed that. What do you want to fix today?")
 
 @ask.intent("AMAZON.YesIntent")
 def yes_intent():
-	instructionnum++
-    return statement("You have selected Stapler Maintenance. This guide requires a stapler and extra staples." + steps[instructionnum])
+    return statement("You have selected Stapler Maintenance. This guide requires a stapler and extra staples. Say next to begin instructions.")
+
 
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
@@ -31,32 +31,35 @@ def no_intent():
 
 @ask.intent("AMAZON.RepeatIntent")
 def repeat_intent():
-	if instructionnum < 1:
-		return statement(nosteps)
-	if instructionnum > len(steps):
-		return statement(donesteps)
-	return statement(steps[instructionnum])
-		
+	if instruction_num < 0:
+		return statement(no_steps)
+	if instruction_num > len(steps):
+		return statement(done_steps)
+	return statement(steps[instruction_num])
+
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
-	instructionnum++
-	if instructionnum < 1:
-		return statement(nosteps)
-	if instructionnum > len(steps):
-		instructionnum--
-		return statement(donesteps)
-	return statement(steps[instructionnum])
-	
+	global instruction_num
+	instruction_num += 1
+	if instruction_num < 0:
+		return statement(no_steps)
+	if instruction_num >= len(steps):
+		instruction_num -= 1
+		return question(done_steps).reprompt("I missed that." + done_steps)
+	return statement(steps[instruction_num])
+
+
 @ask.intent("AMAZON.PreviousIntent")
 def previous_intent():
-	instructionnum--
-	if instructionnum < 1:
-		instructionnum++
-		return statement(nosteps)
-	if instructionnum > len(steps):
-		return statement(donesteps)
-	return statement(steps[instructionnum])
+	global instruction_num
+	instruction_num -= 1
+	if instruction_num < 0:
+		instruction_num += 1
+		return statement(no_steps)
+	if instruction_num >= len(steps):
+		return question(done_steps).reprompt("I missed that." + done_steps)
+	return statement(steps[instruction_num])
 
 @ask.intent("ItemIntent")
 def item_intent():
-    return statement("I sent a list of possible guides through the alexa app. Please choose one or try searching again.")
+    return statement("I sent a list of possible guides through the alexa app. Please choose one or try searching again.").simple_card(title="Guides",content="Stapler Maintenance\nSearch Again")
