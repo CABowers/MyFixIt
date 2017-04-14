@@ -63,3 +63,6 @@ def previous_intent():
 @ask.intent("ItemIntent")
 def item_intent():
     return question("I sent a list of possible guides through the alexa app. Please choose one or try searching again.").simple_card(title="Guides",content="Stapler Maintenance\nSearch Again")
+
+if __name__ == '__main__':
+    app.run()
