@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_ask import Ask, statement, question
+from flask_ask import Ask, statement, question, session
 
 app = Flask(__name__)
 ask = Ask(app, "/")
@@ -22,7 +22,7 @@ def start_skill():
 
 @ask.intent("AMAZON.YesIntent")
 def yes_intent():
-    return statement("You have selected Stapler Maintenance. This guide requires a stapler and extra staples. Say next to begin instructions.")
+    return question("You have selected Stapler Maintenance. This guide requires a stapler and extra staples. Say next to begin instructions.")
 
 
 @ask.intent("AMAZON.NoIntent")
@@ -32,21 +32,21 @@ def no_intent():
 @ask.intent("AMAZON.RepeatIntent")
 def repeat_intent():
 	if instruction_num < 0:
-		return statement(no_steps)
+		return question(no_steps)
 	if instruction_num > len(steps):
-		return statement(done_steps)
-	return statement(steps[instruction_num])
+		return question(done_steps)
+	return question(steps[instruction_num])
 
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
 	global instruction_num
 	instruction_num += 1
 	if instruction_num < 0:
-		return statement(no_steps)
+		return question(no_steps)
 	if instruction_num >= len(steps):
 		instruction_num -= 1
 		return question(done_steps).reprompt("I missed that." + done_steps)
-	return statement(steps[instruction_num])
+	return question(steps[instruction_num])
 
 
 @ask.intent("AMAZON.PreviousIntent")
@@ -55,11 +55,11 @@ def previous_intent():
 	instruction_num -= 1
 	if instruction_num < 0:
 		instruction_num += 1
-		return statement(no_steps)
+		return question(no_steps)
 	if instruction_num >= len(steps):
 		return question(done_steps).reprompt("I missed that." + done_steps)
-	return statement(steps[instruction_num])
+	return question(steps[instruction_num])
 
 @ask.intent("ItemIntent")
 def item_intent():
-    return statement("I sent a list of possible guides through the alexa app. Please choose one or try searching again.").simple_card(title="Guides",content="Stapler Maintenance\nSearch Again")
+    return question("I sent a list of possible guides through the alexa app. Please choose one or try searching again.").simple_card(title="Guides",content="Stapler Maintenance\nSearch Again")
