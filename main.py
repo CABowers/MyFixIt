@@ -10,7 +10,6 @@ steps = ["Step 1: Stapler is empty. Find more staples",
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide. Would you like to start a new project?"
 
-instruction_num = -1
 
 @ask.intent("HelloIntent")
 def hello():
@@ -18,6 +17,7 @@ def hello():
 
 @ask.launch
 def start_skill():
+	instruction_num = -1
     return question("What do you want to fix today?").reprompt("I missed that. What do you want to fix today?")
 
 @ask.intent("AMAZON.YesIntent")
