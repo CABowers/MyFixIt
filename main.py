@@ -18,6 +18,7 @@ def hello():
 
 @ask.launch
 def start_skill():
+    global instruction_num
     instruction_num = -1
     return question('What do you want to fix today?').reprompt("I missed that. What do you want to fix today?")
 
@@ -40,7 +41,7 @@ def repeat_intent():
 
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
-	global instruction_num
+    global instruction_num
 	instruction_num += 1
 	if instruction_num < 0:
 		return question(no_steps)
