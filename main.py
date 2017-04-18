@@ -3,6 +3,7 @@ from flask_ask import Ask, statement, question, session
 
 app = Flask(__name__)
 ask = Ask(app, "/")
+instruction_num = -1
 
 steps = ["Step 1: Stapler is empty. Find more staples",
 		"Step 2 : Put the new staples in! Close the stapler with the new staples in it.",
@@ -17,8 +18,8 @@ def hello():
 
 @ask.launch
 def start_skill():
-	instruction_num = -1
-    return question("What do you want to fix today?").reprompt("I missed that. What do you want to fix today?")
+    instruction_num = -1
+    return question('What do you want to fix today?').reprompt("I missed that. What do you want to fix today?")
 
 @ask.intent("AMAZON.YesIntent")
 def yes_intent():
@@ -31,11 +32,11 @@ def no_intent():
 
 @ask.intent("AMAZON.RepeatIntent")
 def repeat_intent():
-	if instruction_num < 0:
-		return question(no_steps)
-	if instruction_num > len(steps):
-		return question(done_steps)
-	return question(steps[instruction_num])
+    if instruction_num < 0:
+        return question(no_steps)
+    if instruction_num > len(steps):
+        return question(done_steps)
+    return question(steps[instruction_num])
 
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
