@@ -29,6 +29,8 @@ def yes_intent():
 
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
+    global instruction_num
+    instruction_num = -1
     return statement("Goodbye")
 
 @ask.intent("AMAZON.RepeatIntent")
@@ -42,25 +44,25 @@ def repeat_intent():
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
     global instruction_num
-	instruction_num += 1
-	if instruction_num < 0:
-		return question(no_steps)
-	if instruction_num >= len(steps):
-		instruction_num -= 1
-		return question(done_steps).reprompt("I missed that." + done_steps)
-	return question(steps[instruction_num])
+    instruction_num += 1
+    if instruction_num < 0:
+        return question(no_steps)
+    if instruction_num >= len(steps):
+        instruction_num -= 1
+        return question(done_steps).reprompt("I missed that." + done_steps)
+    return question(steps[instruction_num])
 
 
 @ask.intent("AMAZON.PreviousIntent")
 def previous_intent():
-	global instruction_num
-	instruction_num -= 1
-	if instruction_num < 0:
-		instruction_num += 1
-		return question(no_steps)
-	if instruction_num >= len(steps):
-		return question(done_steps).reprompt("I missed that." + done_steps)
-	return question(steps[instruction_num])
+    global instruction_num
+    instruction_num -= 1
+    if instruction_num < 0:
+        instruction_num += 1
+        return question(no_steps)
+    if instruction_num >= len(steps):
+        return question(done_steps).reprompt("I missed that." + done_steps)
+    return question(steps[instruction_num])
 
 @ask.intent("ItemIntent")
 def item_intent():
