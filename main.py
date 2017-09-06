@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_ask import Ask, statement, question, session
+from pyfixit import *
 
 app = Flask(__name__)
 ask = Ask(app, "/")

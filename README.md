@@ -4,7 +4,7 @@
 1. `pip install virtualenv`
     + [this is supposed to be useful](http://python-guide-pt-br.readthedocs.io/en/latest/dev/virtualenvs/ "Info")
 2. In the clone of the repository make a virtual environment `virtualenv venv`
-3. Activate the virtual environment: `\. venv\bin\activate` deactivate the virtual environment `deactivate`
+3. Activate the virtual environment: `\. venv\bin\activate` deactivate the virtual environment `deactivate` in Windows it will be in `venv\Scripts\activate`
 4. Install the requirements `pip install -r requirements.txt` with the virtual environment activated
 
 ## Setting up Alexa Skill in the Developer Console
@@ -19,7 +19,9 @@
     + My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority
 
 ## Notes
-I made the lambda using this [zappa tutorial.](https://youtu.be/mjWV4R2P4ks "zappa tutorial")
+I made the lambda using this [zappa tutorial.](https://developer.amazon.com/blogs/post/8e8ad73a-99e9-4c0f-a7b3-60f92287b0bf/new-alexa-tutorial-deploy-flask-ask-skills-to-aws-lambda-with-zappa "zappa tutorial")
 If you don't feel like going through all that, feel free to use this as your service endpoint: <https://y71c29qgr0.execute-api.us-east-1.amazonaws.com/dev>. It is the one I made.
 
 Cole's end point: https://dhfu6hfvyj.execute-api.us-east-1.amazonaws.com/dev
+
+[PyFixIt Wiki:](https://pyfixit.readthedocs.io/en/latest/ "PyFixIt")
