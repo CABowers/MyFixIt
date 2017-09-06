@@ -14,13 +14,13 @@
 2. Configuration
     + Service Endpoint Type: https
     + region: NA
-    + service endpoint link: <https://y71c29qgr0.execute-api.us-east-1.amazonaws.com/dev>
+    + service endpoint link: <https://8qa3sct347.execute-api.us-east-1.amazonaws.com/dev>
 3. SSL Certificate
     + My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority
 
 ## Notes
 I made the lambda using this [zappa tutorial.](https://developer.amazon.com/blogs/post/8e8ad73a-99e9-4c0f-a7b3-60f92287b0bf/new-alexa-tutorial-deploy-flask-ask-skills-to-aws-lambda-with-zappa "zappa tutorial")
-If you don't feel like going through all that, feel free to use this as your service endpoint: <https://y71c29qgr0.execute-api.us-east-1.amazonaws.com/dev>. It is the one I made.
+If you don't feel like going through all that, feel free to use this as your service endpoint: <https://8qa3sct347.execute-api.us-east-1.amazonaws.com/dev>. It is the one I made.
 
 Cole's end point: https://dhfu6hfvyj.execute-api.us-east-1.amazonaws.com/dev
 
