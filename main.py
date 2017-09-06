@@ -6,11 +6,9 @@ app = Flask(__name__)
 ask = Ask(app, "/")
 instruction_num = -1
 
-steps = ["Step 1: Stapler is empty. Find more staples",
-		"Step 2 : Put the new staples in! Close the stapler with the new staples in it.",
-		"Step 3 : Start stapling stuff!"]
+steps = []
 no_steps = "There are no previous instructions."
-done_steps = "You have completed the guide. Would you like to start a new project?"
+done_steps = "You have completed the guide."
 
 
 @ask.intent("HelloIntent")
