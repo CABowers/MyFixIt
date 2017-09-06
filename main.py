@@ -18,7 +18,7 @@ def start_skill():
 
 @ask.intent("SearchIntent")
 def search(item):
-    # here is where we make the api call and get the guides
+    # Here is where we make the api call and get the guides
     return "Here are your search results. Please select a guide."
 
 @ask.intent("SelectGuideIntent")
