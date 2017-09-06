@@ -21,6 +21,15 @@ def start_skill():
     instruction_num = -1
     return question('What do you want to fix today?').reprompt("I missed that. What do you want to fix today?")
 
+@ask.intent("SearchIntent")
+def search(item):
+    # here is where we make the api call and get the guides
+    return "Here are your search results. Please select a guide."
+
+@ask.intent("SelectGuideIntent")
+def selectguide(guide):
+    return "You have selected guide" + guide + "say next to begin instructions"
+
 @ask.intent("AMAZON.YesIntent")
 def yes_intent():
     return question("You have selected Stapler Maintenance. This guide requires a stapler and extra staples. Say next to begin instructions.")
