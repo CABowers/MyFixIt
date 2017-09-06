@@ -10,11 +10,6 @@ steps = []
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide."
 
-
-@ask.intent("HelloIntent")
-def hello():
-    return statement("Hello friendo!")
-
 @ask.launch
 def start_skill():
     global instruction_num
@@ -32,8 +27,8 @@ def selectguide(guide):
 
 @ask.intent("AMAZON.YesIntent")
 def yes_intent():
-    return question("You have selected Stapler Maintenance. This guide requires a stapler and extra staples. Say next to begin instructions.")
-
+    return question("You have selected Stapler Maintenance. This guide requires a stapler and extra staples. "
+                    "Say next to begin instructions.")
 
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
@@ -74,7 +69,9 @@ def previous_intent():
 
 @ask.intent("ItemIntent")
 def item_intent():
-    return question("I sent a list of possible guides through the alexa app. Please choose one or try searching again.").simple_card(title="Guides",content="Stapler Maintenance\nSearch Again")
+    return question("I sent a list of possible guides through the alexa app. "
+                    "Please choose one or try searching again.")\
+        .simple_card(title="Guides",content="Stapler Maintenance\nSearch Again")
 
 if __name__ == '__main__':
     app.run()
