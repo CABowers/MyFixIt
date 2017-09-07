@@ -1,4 +1,3 @@
 HelloIntent hello
-ItemIntent my stapler
 SearchIntent {item}
 SelectGuideIntent {guide}
