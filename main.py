@@ -51,8 +51,7 @@ def search(item):
 
 @ask.intent("SelectGuideIntent")
 def selectguide(guide_number):
-    logger.info("{}".format(guide_number))
-    found = select_guide_index(guide_number - 1)
+    found = select_guide_index(int(guide_number) - 1)
     if found:
         return question("You have selected guide {} . Say next to begin instructions".format(guide.title))
     return question("Please select a valid guide.")
