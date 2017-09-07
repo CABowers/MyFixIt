@@ -31,7 +31,7 @@
       "slots": [
         {
           "name": "guide_number",
-          "type": "Amazon.NUMBER"
+          "type": "AMAZON.NUMBER"
         }
       ],
       "intent": "SelectGuideIntent"
