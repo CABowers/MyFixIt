@@ -1,3 +1,3 @@
 HelloIntent hello
-SearchIntent {item}
+SearchIntent Search {IPhone | item}
 SelectGuideIntent {guide_number}
