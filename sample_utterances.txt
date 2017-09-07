@@ -1,3 +1,7 @@
 HelloIntent hello
 SearchIntent {item}
+SearchIntent my {item}
+SearchIntent a {item}
+SearchIntent this {item}
+SearchIntent I want to fix my {item}
 SelectGuideIntent {guide}
