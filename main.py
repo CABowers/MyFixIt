@@ -15,12 +15,6 @@ guides = None;
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide."
 
-
-@ask.intent("HelloIntent")
-def hello():
-    return statement("Hello friendo!")
-
-
 @ask.launch
 def start_skill():
     global instruction_num
@@ -35,8 +29,14 @@ def search(item):
         get_guides("Stapler")
     else:
         get_guides(item)
-    guide_names = "\n".join(g.title for g in guides)
-    return question("Here are your search results. Please select a guide by reading the title.").simple_card(title="Guides",content=guide_names)
+    guide_names = ""
+    i = 1
+    for g in guides:
+        num = "\n%i. "%i
+        guide_names = guide_names + num + g.title
+        i += 1
+    return question("Here are your search results. Please select a guide by selecting the corresponding number.")\
+        .simple_card(title="Guides",content=guide_names)
 
 
 @ask.intent("SelectGuideIntent")
@@ -56,7 +56,6 @@ def selectguide(title):
 @ask.intent("AMAZON.YesIntent")
 def yes_intent():
     return question("You have selected Stapler Maintenance. This guide requires a stapler and extra staples. Say next to begin instructions.")
-
 
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
