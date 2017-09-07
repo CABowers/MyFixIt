@@ -2,6 +2,10 @@ HelloIntent hello
 SearchIntent {item}
 SearchIntent my {item}
 SearchIntent a {item}
+SearchIntent the {item}
 SearchIntent this {item}
 SearchIntent I want to fix my {item}
+SearchIntent I want to fix a {item}
+SearchIntent I want to fix the {item}
+SearchIntent I want to fix this {item}
 SelectGuideIntent {guide}
