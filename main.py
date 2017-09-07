@@ -36,7 +36,7 @@ def search(item):
     else:
         get_guides(item)
     guide_names = "\n".join(g.title for g in guides)
-    return question("Here are your search results. Please select a guide by reading the title.").simple_card(title="Guides",content=guide_names)
+    return question("Here are your search results. Please select a guide by reading the number.").simple_card(title="Guides",content=guide_names)
 
 
 @ask.intent("SelectGuideIntent")
