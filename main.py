@@ -10,8 +10,8 @@ ask = Ask(app, "/")
 instruction_num = -1
 
 steps = []
-guide = None;
-guides = None;
+guide = None
+guides = None
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide."
 
@@ -51,7 +51,7 @@ def search(item):
 
 @ask.intent("SelectGuideIntent")
 def selectguide(guide_number):
-    found = False;
+    found = False
     found = select_guide_index(guide_number)
     if found:
         return question("You have selected guide {} . Say next to begin instructions".format(guide.title))
@@ -112,13 +112,13 @@ def select_guide_index(index):
     global guide
     global steps
     global instruction_num
-    if index < 0 or index >= guides.length:
+    if index < 0 or index >= len(guides):
         logger.info("Guide number was not available!")
-        return
+        return False
     guide = guides[index]
     steps = guide.steps
     instruction_num = -1
-    return True;
+    return True
 
 def select_guide(title):
     global guide
