@@ -19,9 +19,6 @@
       "intent": "AMAZON.PreviousIntent"
     },
     {
-      "intent": "ItemIntent"
-    },
-    {
       "intent": "SearchIntent"
     },
     {
