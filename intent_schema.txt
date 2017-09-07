@@ -20,6 +20,12 @@
     },
     {
       "intent": "ItemIntent"
+    },
+    {
+      "intent": "SearchIntent"
+    },
+    {
+      "intent": "SelectGuideIntent"
     }
   ]
 }
