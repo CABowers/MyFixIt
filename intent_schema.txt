@@ -19,9 +19,21 @@
       "intent": "AMAZON.PreviousIntent"
     },
     {
+      "slots": [
+        {
+          "name": "item",
+          "type": "GUIDE_LIST"
+        }
+      ],
       "intent": "SearchIntent"
     },
     {
+      "slots": [
+        {
+          "name": "title",
+          "type": "TITLE_LIST"
+        }
+      ],
       "intent": "SelectGuideIntent"
     }
   ]
