@@ -22,6 +22,10 @@ def start_skill():
     return question('What do you want to fix today?').reprompt("I missed that. What do you want to fix today?")
 
 
+@ask.intent("HelloIntent")
+def hello():
+ return statement("Hello friendo!")
+
 @ask.intent("SearchIntent")
 def search(item):
     if item is None:
@@ -40,17 +44,12 @@ def search(item):
 
 
 @ask.intent("SelectGuideIntent")
-def selectguide(title):
+def selectguide(guide_number):
     found = False;
-    if title is None:
-        logger.info("Title was None")
-        found = select_guide("Stapler Maintenance")
-    else:
-        found = select_guide(title)
+    found = select_guide_index(guide_number)
     if found:
         return question("You have selected guide {} . Say next to begin instructions".format(guide.title))
     return question("Please select a valid guide.")
-
 
 # Currently irrelavent
 @ask.intent("AMAZON.YesIntent")
@@ -106,10 +105,13 @@ def select_guide_index(index):
     global guide
     global steps
     global instruction_num
+    if index >= 0 and index < guides.length:
+        logger.info("Guide number was not available")
+        return
     guide = guides[index]
     steps = guide.steps
     instruction_num = -1
-
+    return True;
 
 def select_guide(title):
     global guide
