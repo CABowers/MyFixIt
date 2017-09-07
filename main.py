@@ -51,7 +51,6 @@ def search(item):
 
 @ask.intent("SelectGuideIntent")
 def selectguide(guide_number):
-    found = False;
     found = select_guide_index(guide_number)
     if found:
         return question("You have selected guide {} . Say next to begin instructions".format(guide.title))
@@ -114,7 +113,7 @@ def select_guide_index(index):
     global instruction_num
     if index < 0 or index >= guides.length:
         logger.info("Guide number was not available!")
-        return
+        return False;
     guide = guides[index]
     steps = guide.steps
     instruction_num = -1
