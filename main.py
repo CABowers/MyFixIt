@@ -111,7 +111,7 @@ def select_guide_index(index):
     global guide
     global steps
     global instruction_num
-    if index < 0 or index >= guides.length:
+    if index < 0 or index >= len(guides):
         logger.info("Guide number was not available!")
         return False
     guide = guides[index]
