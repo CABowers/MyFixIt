@@ -22,7 +22,7 @@
       "slots": [
         {
           "name": "item",
-          "type": "AMAZON.LITERAL"
+          "type": "SEARCH_ITEMS"
         }
       ],
       "intent": "SearchIntent"

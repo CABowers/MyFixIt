@@ -1,3 +1,7 @@
 HelloIntent hello
-SearchIntent Search {IPhone | item}
+SearchIntent Search {item}
+SearchIntent Search for {item}
+SearchIntent {item}
+SearchIntent I want to fix my {item}
 SelectGuideIntent {guide_number}
+SelectGuideIntent Guide number {guide_number}
