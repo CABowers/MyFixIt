@@ -7,7 +7,6 @@ from flask_ask import question, statement
 def guide_length():
     return ("Here is the length of your instruction guide")
 
-
 class States(StatesBase):
     def help(self):
         return question("What do you need help with?")
