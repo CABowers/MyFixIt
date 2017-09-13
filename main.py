@@ -9,6 +9,17 @@ app = Flask(__name__)
 ask = Ask(app, "/")
 instruction_num = -1
 
+SOURCE_STATE = 'source_state'
+# LIST OF STATES
+HELP = 'help'
+START = 'start'
+SEARCH = 'search'
+SELECT_GUIDE = 'select_guide'
+YES = 'yes'
+NO = 'no'
+NEXT = 'next'
+PREVIOUS = 'previous' 
+
 steps = []
 guide = None
 guides = None
@@ -23,6 +34,8 @@ def hello():
 def start_skill():
     global instruction_num
     instruction_num = -1
+    
+    session.attributes[SOURCE_STATE] = START
     return question('What do you want to fix today?').reprompt("I missed that. What do you want to fix today?")
 
 
@@ -43,12 +56,14 @@ def search(item):
         num = "\n%i. " % i
         guide_names = guide_names + num + g.title
         i += 1
+    session.attributes[SOURCE_STATE] = SEARCH
     return question("Here are your search results. Please select a guide by selecting the corresponding number.")\
         .simple_card(title="Guides", content=guide_names)
 
 
 @ask.intent("SelectGuideIntent")
 def selectguide(guide_number):
+    session.attributes[SOURCE_STATE] = SELECT_GUIDE
     found = select_guide_index(int(guide_number) - 1)
     if found:
         return question("You have selected guide {} . Say next to begin instructions".format(guide.title))
@@ -57,6 +72,7 @@ def selectguide(guide_number):
 # Currently irrelevant
 @ask.intent("AMAZON.YesIntent")
 def yes_intent():
+    session.attributes[SOURCE_STATE] = YES
     return question("You have selected Stapler Maintenance. This guide requires a stapler and extra staples. Say next to begin instructions.")
 
 
@@ -64,6 +80,7 @@ def yes_intent():
 def no_intent():
     global instruction_num
     instruction_num = -1
+    session.attributes[SOURCE_STATE] = NO
     return statement("Goodbye")
 
 
@@ -78,6 +95,7 @@ def repeat_intent():
 
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
+    session.attributes[SOURCE_STATE] = NEXT
     global instruction_num
     instruction_num += 1
     if instruction_num < 0:
@@ -96,6 +114,7 @@ def next_intent():
 
 @ask.intent("AMAZON.PreviousIntent")
 def previous_intent():
+    session.attributes[SOURCE_STATE] = PREVIOUS
     global instruction_num
     instruction_num -= 1
     if instruction_num < 0:
