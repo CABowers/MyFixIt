@@ -87,6 +87,10 @@ def next_intent():
     if instruction_num >= len(steps):
         instruction_num -= 1
         return question(done_steps).reprompt("I missed that." + done_steps)
+    for image in steps[instruction_num].media:
+        statement("").standardCard(title="Step %i" % instruction_num,
+                                   text="", small_image_url=image.thumbnail,
+                                   large_image_url=image.original)
     return question(text_for_step(steps[instruction_num]))
 
 
