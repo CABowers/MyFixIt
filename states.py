@@ -1,8 +1,7 @@
 from alexafsm.states import with_transitions, States as StatesBase
 from alexafsm import response
 from alexafsm import amazon_intent
-from flask import Flask
-from flask_ask import Ask, statement, question, session
+from flask_ask import question, statement
 
 
 def guide_length():
@@ -26,4 +25,4 @@ class States(StatesBase):
         return question("Here is the next instruction")
 
     def goodbye(self):
-        return statemetn("Goodbye")
+        return statement("Goodbye")
