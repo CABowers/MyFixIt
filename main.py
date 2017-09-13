@@ -15,11 +15,9 @@ guides = None
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide."
 
-
 @ask.intent("HelloIntent")
 def hello():
     return statement("Hello friendo!")
-
 
 @ask.launch
 def start_skill():
@@ -56,7 +54,7 @@ def selectguide(guide_number):
         return question("You have selected guide {} . Say next to begin instructions".format(guide.title))
     return question("Please select a valid guide.")
 
-# Currently irrelavent
+# Currently irrelevant
 @ask.intent("AMAZON.YesIntent")
 def yes_intent():
     return question("You have selected Stapler Maintenance. This guide requires a stapler and extra staples. Say next to begin instructions.")
