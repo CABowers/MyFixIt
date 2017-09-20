@@ -120,7 +120,7 @@ def next_intent():
             return question(text_for_step(steps[instruction_num]))
 
         if reply:
-            return question(reply).standard_card(title="Step %i" % instruction_num,
+            return question(reply).standard_card(title="Step %i" % (instruction_num + 1),
                                              text="",
                                              small_image_url=good_images[0].thumbnail,
                                              large_image_url=good_images[0].original)
@@ -180,7 +180,7 @@ def next_picture_intent():
         return question("There are no more images for this step.")
     image = good_images[image_num]
     text = "Image {} of {}".format(image_num + 1, len(good_images))
-    return question(text).standard_card(title="Step %i" % instruction_num,
+    return question(text).standard_card(title="Step %i" % (instruction_num + 1),
                                        text=text,
                                        small_image_url=image.thumbnail,
                                        large_image_url=image.original)
