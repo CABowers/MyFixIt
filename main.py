@@ -25,12 +25,14 @@ guides = None
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide."
 
+
 image_num = 0
 good_images = []
 
 @ask.intent("HelloIntent")
 def hello():
     return statement("Hello friendo!")
+
 
 @ask.launch
 def start_skill():
@@ -39,6 +41,7 @@ def start_skill():
     
     session.attributes[SOURCE_STATE] = START
     return question('What do you want to fix today?').reprompt("I missed that. What do you want to fix today?")
+
 
 @ask.intent("SearchIntent")
 def search(item):
@@ -71,6 +74,7 @@ def selectguide(guide_number):
         return question("Please select a valid guide.")
     else:
         return error_exit()
+
 
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
@@ -154,6 +158,8 @@ NO = 'no'
 NEXT = 'next'
 PREVIOUS = 'previous' 
 '''
+
+
 @ask.intent("AMAZON.HelpIntent")
 def help_intent():
     previous = session.attributes[SOURCE_STATE]
@@ -181,6 +187,7 @@ def next_picture_intent():
                                        small_image_url=image.thumbnail,
                                        large_image_url=image.original)
 
+
 def get_guides(search):
     global guides
     guides = Category(search).guides
@@ -197,6 +204,7 @@ def select_guide_index(index):
     steps = guide.steps
     instruction_num = -1
     return True
+
 
 def select_guide(title):
     global guide
@@ -227,12 +235,16 @@ def get_guide_titles():
 def get_state():
     return session.__getattribute__(SOURCE_STATE)
 
+
 def set_state(state):
     session.attributes[SOURCE_STATE] = state
+
 
 def error_exit():
     # TODO: Return to source state's intent
     logger.info("Search state did not follow start state")
     return statement("There was an error. Goodbye")
+
+
 if __name__ == '__main__':
     app.run()

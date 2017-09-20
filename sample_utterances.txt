@@ -1,4 +1,3 @@
-HelloIntent hello
 SearchIntent Search {item}
 SearchIntent Search for {item}
 SearchIntent {item}
@@ -7,3 +6,5 @@ SelectGuideIntent {guide_number}
 SelectGuideIntent Guide number {guide_number}
 NextPicture Next Picture
 NextPicture Next Image
+HelpIntent Help
+HelpIntent I don't know what to do

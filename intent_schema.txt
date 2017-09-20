@@ -22,6 +22,9 @@
       "intent": "AMAZON.PreviousIntent"
     },
     {
+      "intent": "HelpIntent"
+    },
+    {
       "slots": [
         {
           "name": "item",
