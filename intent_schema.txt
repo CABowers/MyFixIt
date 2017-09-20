@@ -1,9 +1,6 @@
 {
   "intents": [
     {
-      "intent": "HelloIntent"
-    },
-    {
       "intent": "AMAZON.YesIntent"
     },
     {
@@ -17,6 +14,9 @@
     },
     {
       "intent": "AMAZON.PreviousIntent"
+    },
+    {
+      "intent": "HelpIntent"
     },
     {
       "slots": [
