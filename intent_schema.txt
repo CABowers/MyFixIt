@@ -4,6 +4,9 @@
       "intent": "HelloIntent"
     },
     {
+      "intent": "NextPicture"
+    },
+    {
       "intent": "AMAZON.YesIntent"
     },
     {
