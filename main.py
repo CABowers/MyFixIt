@@ -137,13 +137,13 @@ PREVIOUS = 'previous'
 def help_intent():
     previous = get_state()
     response = 'You are using the My Fix It skill'
-    if (previous == HELP):
+    if previous == HELP:
         response = "I'm sorry, I don't know how to help you get help."
-    elif (previous == START):
+    elif previous == START:
         response = "Please tell me what you would like to fix today, and I will guide you through the process."
-    elif (previous == SEARCH):
+    elif previous == SEARCH:
         response = "I sent a list of guides to your phone, please tell me the number of the guide you would like to complete."
-    elif (previous == SELECT_GUIDE):
+    elif previous == SELECT_GUIDE:
         response == "Please say next if you have selected a valid guide"
 
 
