@@ -125,6 +125,29 @@ def previous_intent():
     return question(text_for_step(steps[instruction_num]))
 
 
+'''
+HELP = 'help'
+START = 'start'
+SEARCH = 'search'
+SELECT_GUIDE = 'select_guide'
+YES = 'yes'
+NO = 'no'
+NEXT = 'next'
+PREVIOUS = 'previous' 
+'''
+@ask.intent("AMAZON.HelpIntent")
+def help_intent():
+    previous = session.attributes[SOURCE_STATE]
+    response = 'You are using the My Fix It skill'
+    if (previous == HELP):
+        response = "I'm sorry, I don't know how to help you get help."
+    elif (previous == START):
+        response = "Please tell me what you would like to fix today, and I will guide you through the process."
+    elif (previous == SEARCH):
+        response = "I sent a list of guides to your phone, please tell me the number of the guide you would like to complete."
+    elif (previous == SELECT_GUIDE):
+        response == "Please say next if you have selected a valid guide"
+
 def get_guides(search):
     global guides
     guides = Category(search).guides
