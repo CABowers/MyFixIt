@@ -25,6 +25,9 @@ guides = None
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide."
 
+image_num = 0
+good_images = []
+
 @ask.intent("HelloIntent")
 def hello():
     return statement("Hello friendo!")
@@ -88,22 +91,40 @@ def repeat_intent():
 
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
+    global good_images
+    global instruction_num
     if get_state() == SELECT_GUIDE or get_state() == INSTRUCTIONS:
-        global instruction_num
+        set_state(INSTRUCTIONS)
         instruction_num += 1
         if instruction_num < 0:
             return question(no_steps)
         if instruction_num >= len(steps):
             instruction_num -= 1
             return question(done_steps).reprompt("I missed that." + done_steps)
+
+        good_images = []
         for image in steps[instruction_num].media:
             if image.thumbnail and image.original:
-                return question(text_for_step(steps[instruction_num])).standard_card(title="Step %i" % instruction_num,
-                                           text="",
-                                           small_image_url=image.thumbnail,
-                                           large_image_url=image.original)
-        set_state(INSTRUCTIONS)
-        return question(text_for_step(steps[instruction_num]))
+                good_images.append(image)
+
+        if len(good_images) > 1:
+            reply = "We have sent the first of %i images to your Alexa app. To get the next image say next image" \
+                    % len(good_images) \
+                    + text_for_step(steps[instruction_num])
+        elif len(good_images) == 1:
+            reply = "We have sent an image associated with this step to your Alexa app." \
+                    + text_for_step(steps[instruction_num])
+        elif len(good_images) == 0:
+            return question(text_for_step(steps[instruction_num]))
+
+        if reply:
+            return question(reply).standard_card(title="Step %i" % instruction_num,
+                                             text="",
+                                             small_image_url=good_images[0].thumbnail,
+                                             large_image_url=good_images[0].original)
+        else:
+            logger.error("good_images was not set correctly!")
+            return error_exit()
     else:
         return error_exit()
 
@@ -145,6 +166,20 @@ def help_intent():
         response = "I sent a list of guides to your phone, please tell me the number of the guide you would like to complete."
     elif (previous == SELECT_GUIDE):
         response == "Please say next if you have selected a valid guide"
+
+@ask.intent("NextPicture")
+def next_picture_intent():
+    global image_num
+    global good_images
+    image_num += 1
+    if image_num >= len(good_images):
+        return question("There are no more images for this step.")
+    image = good_images[image_num]
+    text = "Image {} of {}".format(image_num + 1, len(good_images))
+    return question(text).standard_card(title="Step %i" % instruction_num,
+                                       text=text,
+                                       small_image_url=image.thumbnail,
+                                       large_image_url=image.original)
 
 def get_guides(search):
     global guides
