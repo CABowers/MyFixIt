@@ -5,3 +5,5 @@ SearchIntent {item}
 SearchIntent I want to fix my {item}
 SelectGuideIntent {guide_number}
 SelectGuideIntent Guide number {guide_number}
+HelpIntent Help
+HelpIntent I don't know what to do
