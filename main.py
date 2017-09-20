@@ -38,11 +38,6 @@ def start_skill():
     session.attributes[SOURCE_STATE] = START
     return question('What do you want to fix today?').reprompt("I missed that. What do you want to fix today?")
 
-
-@ask.intent("HelloIntent")
-def hello():
- return statement("Hello friendo!")
-
 @ask.intent("SearchIntent")
 def search(item):
     if item is None:
