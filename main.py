@@ -25,7 +25,6 @@ guides = None
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide."
 
-
 image_num = 0
 good_images = []
 
@@ -38,7 +37,6 @@ def hello():
 def start_skill():
     global instruction_num
     instruction_num = -1
-    
     session.attributes[SOURCE_STATE] = START
     return question('What do you want to fix today?').reprompt("I missed that. What do you want to fix today?")
 
@@ -162,7 +160,7 @@ PREVIOUS = 'previous'
 
 @ask.intent("AMAZON.HelpIntent")
 def help_intent():
-    previous = session.attributes[SOURCE_STATE]
+    previous = get_state()
     response = 'You are using the My Fix It skill'
     if (previous == HELP):
         response = "I'm sorry, I don't know how to help you get help."
