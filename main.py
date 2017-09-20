@@ -15,6 +15,8 @@ guides = None
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide."
 
+image_num = 0
+
 @ask.intent("HelloIntent")
 def hello():
     return statement("Hello friendo!")
@@ -121,6 +123,19 @@ def previous_intent():
     if instruction_num >= len(steps):
         return question(done_steps).reprompt("I missed that." + done_steps)
     return question(text_for_step(steps[instruction_num]))
+
+
+@ask.intent("NextPicture")
+def next_picture_intent():
+    global image_num
+    image_num += 1
+    if image_num >= len(good_images):
+        return question("There are no more images for this step.")
+    image = good_images[image_num]
+    return question("").standard_card(title="Step %i" % instruction_num,
+                                       text="Image {} of {}".format(image_num, len(good_images)),
+                                       small_image_url=image.thumbnail,
+                                       large_image_url=image.original)
 
 
 def get_guides(search):
