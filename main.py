@@ -17,8 +17,7 @@ SEARCH = 'search'
 SELECT_GUIDE = 'select_guide'
 YES = 'yes'
 NO = 'no'
-NEXT = 'next'
-PREVIOUS = 'previous' 
+INSTRUCTIONS = 'instructions'
 
 steps = []
 guide = None
@@ -40,42 +39,41 @@ def start_skill():
 
 @ask.intent("SearchIntent")
 def search(item):
-    if item is None:
-        logger.info("Item is None")
-        get_guides("Stapler")
-    else:
-        get_guides(item)
-    guide_names = ""
-    i = 1
-    for g in guides:
-        num = "\n%i. " % i
+    if get_state() == START:
+        if item is None:
+            logger.info("Item is None")
+            start_skill()
+        else:
+            get_guides(item)
+        guide_names = ""
+        i = 1
+        for g in guides:
+            num = "\n%i. " % i
         guide_names = guide_names + num + g.title
         i += 1
-    session.attributes[SOURCE_STATE] = SEARCH
-    return question("Here are your search results. Please select a guide by selecting the corresponding number.")\
-        .simple_card(title="Guides", content=guide_names)
+        set_state(SEARCH)
+        return question("Here are your search results. Please select a guide by selecting the corresponding number.") \
+            .simple_card(title="Guides", content=guide_names)
+    else:
+        return error_exit()
 
 
 @ask.intent("SelectGuideIntent")
 def selectguide(guide_number):
-    session.attributes[SOURCE_STATE] = SELECT_GUIDE
-    found = select_guide_index(int(guide_number) - 1)
-    if found:
-        return question("You have selected guide {} . Say next to begin instructions".format(guide.title))
-    return question("Please select a valid guide.")
-
-# Currently irrelevant
-@ask.intent("AMAZON.YesIntent")
-def yes_intent():
-    session.attributes[SOURCE_STATE] = YES
-    return question("You have selected Stapler Maintenance. This guide requires a stapler and extra staples. Say next to begin instructions.")
-
+    if get_state() == SEARCH or get_state() == SELECT_GUIDE:
+        found = select_guide_index(int(guide_number) - 1)
+        set_state(SELECT_GUIDE)
+        if found:
+            return question("You have selected guide {} . Say next to begin instructions".format(guide.title))
+        return question("Please select a valid guide.")
+    else:
+        return error_exit()
 
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
     global instruction_num
     instruction_num = -1
-    session.attributes[SOURCE_STATE] = NO
+    set_state(NO)
     return statement("Goodbye")
 
 
@@ -90,35 +88,40 @@ def repeat_intent():
 
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
-    session.attributes[SOURCE_STATE] = NEXT
-    global instruction_num
-    instruction_num += 1
-    if instruction_num < 0:
-        return question(no_steps)
-    if instruction_num >= len(steps):
-        instruction_num -= 1
-        return question(done_steps).reprompt("I missed that." + done_steps)
-    for image in steps[instruction_num].media:
-        if image.thumbnail and image.original:
-            return question(text_for_step(steps[instruction_num])).standard_card(title="Step %i" % instruction_num,
-                                       text="",
-                                       small_image_url=image.thumbnail,
-                                       large_image_url=image.original)
-    return question(text_for_step(steps[instruction_num]))
+    if get_state() == SELECT_GUIDE or get_state() == INSTRUCTIONS:
+        global instruction_num
+        instruction_num += 1
+        if instruction_num < 0:
+            return question(no_steps)
+        if instruction_num >= len(steps):
+            instruction_num -= 1
+            return question(done_steps).reprompt("I missed that." + done_steps)
+        for image in steps[instruction_num].media:
+            if image.thumbnail and image.original:
+                return question(text_for_step(steps[instruction_num])).standard_card(title="Step %i" % instruction_num,
+                                           text="",
+                                           small_image_url=image.thumbnail,
+                                           large_image_url=image.original)
+        set_state(INSTRUCTIONS)
+        return question(text_for_step(steps[instruction_num]))
+    else:
+        return error_exit()
 
 
 @ask.intent("AMAZON.PreviousIntent")
 def previous_intent():
-    session.attributes[SOURCE_STATE] = PREVIOUS
-    global instruction_num
-    instruction_num -= 1
-    if instruction_num < 0:
-        instruction_num += 1
-        return question(no_steps)
-    if instruction_num >= len(steps):
-        return question(done_steps).reprompt("I missed that." + done_steps)
-    return question(text_for_step(steps[instruction_num]))
-
+    if get_state() == INSTRUCTIONS:
+        global instruction_num
+        instruction_num -= 1
+        set_state(INSTRUCTIONS) #Redundant but it's safer to be explicit
+        if instruction_num < 0:
+            instruction_num += 1
+            return question(no_steps)
+        if instruction_num >= len(steps):
+            return question(done_steps).reprompt("I missed that." + done_steps)
+        return question(text_for_step(steps[instruction_num]))
+    else:
+        return error_exit()
 
 def get_guides(search):
     global guides
@@ -162,5 +165,16 @@ def get_guide_titles():
     titles = [g.title for g in guides]
     return titles
 
+
+def get_state():
+    return session.__getattribute__(SOURCE_STATE)
+
+def set_state(state):
+    session.attributes[SOURCE_STATE] = state
+
+def error_exit():
+    # TODO: Return to source state's intent
+    logger.info("Search state did not follow start state")
+    return statement("There was an error. Goodbye")
 if __name__ == '__main__':
     app.run()
