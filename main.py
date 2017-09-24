@@ -229,7 +229,7 @@ def get_guide_titles():
     titles = [g.title for g in guides]
     return titles
 
-
+#Get's the stored previous state of the session
 def get_state():
     return session.attributes.get(SOURCE_STATE)
 
