@@ -192,7 +192,7 @@ def get_guide_titles():
 
 
 def get_state():
-    return session.__getattribute__(SOURCE_STATE)
+    return session.attributes.get(SOURCE_STATE)
 
 
 def set_state(state):
