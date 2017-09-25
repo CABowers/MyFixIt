@@ -133,8 +133,8 @@ def next_picture_intent():
     if image_num >= len(good_images):
         return question("There are no more images for this step.")
     image = good_images[image_num]
-    text = "Image {} of {}".format(image_num + 1, len(good_images))
-    return question(text).simple_card(title="Step %i" % instruction_num,
+    text = ": Image {} of {}".format(image_num + 1, len(good_images))
+    return question(text).simple_card(title="Step %i" % instruction_num + text,
                                       content=image.original)
 
 def get_guides(search):
