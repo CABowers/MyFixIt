@@ -198,7 +198,7 @@ def next_picture_intent():
 #Number of instructions
 @ask.intent("NumberInstructionsIntent")
 def numinstructions_intent():
-    return question("The number of instructions in this guide is " + steps.length)
+    return question("The number of instructions in this guide is %i" %len(steps))
 
 # Helper methods
 def get_guides(search):
