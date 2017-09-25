@@ -8,3 +8,4 @@ NextPicture Next Picture
 NextPicture Next Image
 HelpIntent Help
 HelpIntent I don't know what to do
+NumberInstructionsIntent How many instructions are there
