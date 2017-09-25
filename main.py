@@ -92,20 +92,18 @@ def next_intent():
             good_images.append(image)
 
     if len(good_images) > 1:
-        reply = "We have sent the first of %i images to your Alexa app. To get the next image say next image" \
+        reply = "We have sent the first of %i image urls to your Alexa app. To get the next image say next image" \
                 % len(good_images) \
                 + text_for_step(steps[instruction_num])
     elif len(good_images) == 1:
-        reply = "We have sent an image associated with this step to your Alexa app." \
+        reply = "We have sent an image url associated with this step to your Alexa app. " \
                 + text_for_step(steps[instruction_num])
     elif len(good_images) == 0:
         return question(text_for_step(steps[instruction_num]))
 
     if reply:
-        return question(reply).standard_card(title="Step %i" % instruction_num,
-                                         text="",
-                                         small_image_url=good_images[0].thumbnail,
-                                         large_image_url=good_images[0].original)
+        return question(reply).simple_card(title="Step %i" % instruction_num,
+                                           content=good_images[0].original)
     else:
         logger.error("good_images was not set correctly!")
         return False
