@@ -172,6 +172,7 @@ def help_intent():
         response = "I sent a list of guides to your phone, please tell me the number of the guide you would like to complete."
     elif previous == SELECT_GUIDE:
         response == "Please say next if you have selected a valid guide"
+    return question(response)
 
 #Length of task
 #@ask.intent("LengthOfGuideIntent")
