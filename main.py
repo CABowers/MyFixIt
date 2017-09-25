@@ -54,8 +54,9 @@ def search(item):
         i = 1
         for g in guides:
             num = "\n%i. " % i
-            guide_names = guide_names + num + g.title
-            i += 1
+            if g and g.title:
+                guide_names = guide_names + num + g.title
+                i += 1
         set_state(SEARCH)
         return question("Here are your search results. Please select a guide by selecting the corresponding number.") \
             .simple_card(title="Guides", content=guide_names)
