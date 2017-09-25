@@ -92,7 +92,7 @@ def next_intent():
 
     good_images = []
     for image in steps[instruction_num].media:
-        if image.thumbnail and image.original:
+        if image.original:
             good_images.append(image)
 
     if len(good_images) > 1:
@@ -134,10 +134,8 @@ def next_picture_intent():
         return question("There are no more images for this step.")
     image = good_images[image_num]
     text = "Image {} of {}".format(image_num + 1, len(good_images))
-    return question(text).standard_card(title="Step %i" % instruction_num,
-                                       text=text,
-                                       small_image_url=image.thumbnail,
-                                       large_image_url=image.original)
+    return question(text).simple_card(title="Step %i" % instruction_num,
+                                      content=image.original)
 
 def get_guides(search):
     global guides
