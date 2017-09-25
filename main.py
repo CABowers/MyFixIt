@@ -158,7 +158,7 @@ PREVIOUS = 'previous'
 '''
 
 
-@ask.intent("AMAZON.HelpIntent")
+@ask.intent("HelpIntent")
 def help_intent():
     previous = get_state()
     response = 'You are using the My Fix It skill'
