@@ -186,6 +186,21 @@ def next_picture_intent():
                                        large_image_url=image.original)
 
 
+#Length of task
+#@ask.intent("LengthOfGuideIntent")
+#def lenofguide_intent(len_guide_number):
+#    if isinstance(len_guide_number, int):
+#        length = select_guide_index(len_guide_number)
+#    else:
+#        length = guide.attributes['time required']
+#    return question("The length of this guide is " + length)
+
+#Number of instructions
+@ask.intent("NumberInstructionsIntent")
+def numinstructions_intent():
+    return question("The number of instructions in this guide is " + steps.length)
+
+# Helper methods
 def get_guides(search):
     global guides
     guides = Category(search).guides

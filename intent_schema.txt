@@ -25,6 +25,9 @@
       "intent": "HelpIntent"
     },
     {
+      "intent": "NumberInstructionsIntent"
+    },
+    {
       "slots": [
         {
           "name": "item",
