@@ -172,21 +172,6 @@ def help_intent():
     elif previous == SELECT_GUIDE:
         response == "Please say next if you have selected a valid guide"
 
-@ask.intent("NextPicture")
-def next_picture_intent():
-    global image_num
-    global good_images
-    image_num += 1
-    if image_num >= len(good_images):
-        return question("There are no more images for this step.")
-    image = good_images[image_num]
-    text = "Image {} of {}".format(image_num + 1, len(good_images))
-    return question(text).standard_card(title="Step %i" % (instruction_num + 1),
-                                       text=text,
-                                       small_image_url=image.thumbnail,
-                                       large_image_url=image.original)
-
-
 #Length of task
 #@ask.intent("LengthOfGuideIntent")
 #def lenofguide_intent(len_guide_number):
