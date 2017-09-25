@@ -50,6 +50,7 @@ def search(item):
         else:
             get_guides(item)
         guide_names = ""
+        num = ""
         i = 1
         for g in guides:
             num = "\n%i. " % i
