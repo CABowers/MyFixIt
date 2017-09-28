@@ -181,7 +181,7 @@ def lenofguide_intent(len_guide_number):
         length = select_guide_index(len_guide_number)
     else:
         length = guide.time_required_min
-    return question("The length of this guide is " + length)
+    return question("The length of this guide is %i" %length)
 
 #Number of instructions
 @ask.intent("NumberInstructionsIntent")
