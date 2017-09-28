@@ -4,9 +4,6 @@
       "intent": "HelloIntent"
     },
     {
-      "intent": "NextPicture"
-    },
-    {
       "intent": "AMAZON.YesIntent"
     },
     {
@@ -20,6 +17,15 @@
     },
     {
       "intent": "AMAZON.PreviousIntent"
+    },
+    {
+      "intent": "HelpIntent"
+    },
+    {
+      "intent": "NumberInstructionsIntent"
+    },
+    {
+      "intent": "NextPicture"
     },
     {
       "slots": [

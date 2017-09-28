@@ -9,6 +9,17 @@ app = Flask(__name__)
 ask = Ask(app, "/")
 instruction_num = -1
 
+
+SOURCE_STATE = 'source_state'
+# LIST OF STATES
+HELP = 'help'
+START = 'start'
+SEARCH = 'search'
+SELECT_GUIDE = 'select_guide'
+YES = 'yes'
+NO = 'no'
+INSTRUCTIONS = 'instructions'
+
 steps = []
 guide = None
 guides = None
@@ -26,49 +37,49 @@ def hello():
 def start_skill():
     global instruction_num
     instruction_num = -1
+    session.attributes[SOURCE_STATE] = START
     return question('What do you want to fix today?').reprompt("I missed that. What do you want to fix today?")
 
 
-@ask.intent("HelloIntent")
-def hello():
- return statement("Hello friendo!")
-
 @ask.intent("SearchIntent")
 def search(item):
-    if item is None:
-        logger.info("Item is None")
-        get_guides("Stapler")
+    if get_state() == START:
+        if item is None:
+            logger.info("Item is None")
+            start_skill()
+        else:
+            get_guides(item)
+        guide_names = ""
+        i = 1
+        for g in guides:
+            num = "\n%i. " % i
+            if g and g.title:
+                guide_names = guide_names + num + g.title
+                i += 1
+        set_state(SEARCH)
+        return question("Here are your search results. Please select a guide by selecting the corresponding number.") \
+            .simple_card(title="Guides", content=guide_names)
     else:
-        get_guides(item)
-    guide_names = ""
-    i = 1
-    for g in guides:
-        num = "\n%i. " % i
-        guide_names = guide_names + num + g.title
-        i += 1
-    return question("Here are your search results. Please select a guide by selecting the corresponding number.")\
-        .simple_card(title="Guides", content=guide_names).reprompt("I didn't catch that. Please restate the "
-                                                                   "number associated with the guide you would "
-                                                                   "like to start.")
+        return error_exit()
 
 
 @ask.intent("SelectGuideIntent")
 def selectguide(guide_number):
-    found = select_guide_index(int(guide_number) - 1)
-    if found:
-        return question("You have selected guide {} . Say next to begin instructions".format(guide.title))
-    return question("Please select a valid guide.")
-
-# Currently irrelevant
-@ask.intent("AMAZON.YesIntent")
-def yes_intent():
-    return question("You have selected Stapler Maintenance. This guide requires a stapler and extra staples. Say next to begin instructions.")
+    if get_state() == SEARCH or get_state() == SELECT_GUIDE:
+        found = select_guide_index(int(guide_number) - 1)
+        set_state(SELECT_GUIDE)
+        if found:
+            return question("You have selected guide {} . Say next to begin instructions".format(guide.title))
+        return question("Please select a valid guide.")
+    else:
+        return error_exit()
 
 
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
     global instruction_num
     instruction_num = -1
+    set_state(NO)
     return statement("Goodbye")
 
 
@@ -85,52 +96,104 @@ def repeat_intent():
 def next_intent():
     global good_images
     global instruction_num
-    instruction_num += 1
-    if instruction_num < 0:
-        return question(no_steps)
-    if instruction_num >= len(steps):
-        instruction_num -= 1
-        return question(done_steps).reprompt("I missed that." + done_steps)
 
-    good_images = []
-    for image in steps[instruction_num].media:
-        if image.original:
-            good_images.append(image)
+    if get_state() == SELECT_GUIDE or get_state() == INSTRUCTIONS:
+        set_state(INSTRUCTIONS)
+        instruction_num += 1
+        if instruction_num < 0:
+            return question(no_steps)
+        if instruction_num >= len(steps):
+            instruction_num -= 1
+            return question(done_steps).reprompt("I missed that." + done_steps)
 
-    if len(good_images) > 1:
-        reply = "We have sent the first of %i image urls to your Alexa app. To get the next image say next image" \
-                % len(good_images) \
-                + text_for_step(steps[instruction_num])
-    elif len(good_images) == 1:
-        reply = "We have sent an image url associated with this step to your Alexa app. " \
-                + text_for_step(steps[instruction_num])
-    elif len(good_images) == 0:
-        return question(text_for_step(steps[instruction_num])).reprompt("Can you repeat that?")
+        good_images = []
+        for image in steps[instruction_num].media:
+            if image.original:
+                good_images.append(image)
 
-    if reply:
-        return question(reply).simple_card(title="Step %i" % instruction_num,
-                                           content=good_images[0].original).reprompt("Can you repeat that?")
-    else:
-        logger.error("good_images was not set correctly!")
-        return False
+        if len(good_images) > 1:
+            reply = "We have sent the first of %i images to your Alexa app. To get the next image say next image" \
+                    % len(good_images) \
+                    + text_for_step(steps[instruction_num])
+        elif len(good_images) == 1:
+            reply = "We have sent an image associated with this step to your Alexa app." \
+                    + text_for_step(steps[instruction_num])
+        elif len(good_images) == 0:
+            return question(text_for_step(steps[instruction_num]))
+
+        if reply:
+            return question(reply).simple_card(title="Step %i" % (instruction_num + 1),
+                                                content=good_images[0].original).reprompt("Can you repeat that?")
+        else:
+            logger.error("good_images was not set correctly!")
+
+    logger.error("State not correct")
+    return error_exit()
 
 
 @ask.intent("AMAZON.PreviousIntent")
 def previous_intent():
-    global instruction_num
-    instruction_num -= 1
-    if instruction_num < 0:
-        instruction_num += 1
-        return question(no_steps)
-    if instruction_num >= len(steps):
-        return question(done_steps).reprompt("I missed that." + done_steps)
-    return question(text_for_step(steps[instruction_num]))
+    if get_state() == INSTRUCTIONS:
+        global instruction_num
+        instruction_num -= 1
+        set_state(INSTRUCTIONS) #Redundant but it's safer to be explicit
+        if instruction_num < 0:
+            instruction_num += 1
+            return question(no_steps)
+        if instruction_num >= len(steps):
+            return question(done_steps).reprompt("I missed that." + done_steps)
+        return question(text_for_step(steps[instruction_num]))
+    else:
+        return error_exit()
+
+'''
+HELP = 'help'
+START = 'start'
+SEARCH = 'search'
+SELECT_GUIDE = 'select_guide'
+YES = 'yes'
+NO = 'no'
+NEXT = 'next'
+PREVIOUS = 'previous' 
+'''
+
+
+@ask.intent("HelpIntent")
+def help_intent():
+    previous = get_state()
+    response = 'You are using the My Fix It skill'
+    if previous == HELP:
+        response = "I'm sorry, I don't know how to help you get help."
+    elif previous == START:
+        response = "Please tell me what you would like to fix today, and I will guide you through the process."
+    elif previous == SEARCH:
+        response = "I sent a list of guides to your phone, please tell me the number of the guide you would like to complete."
+    elif previous == SELECT_GUIDE:
+        response == "Please say next if you have selected a valid guide"
+    return question(response)
+
+#Length of task
+@ask.intent("LengthOfGuideIntent")
+def lenofguide_intent(len_guide_number):
+    if isinstance(len_guide_number, int):
+        length = select_guide_index(len_guide_number)
+    else:
+        length = guide.time_required_min
+    hours = length /  (60 * 24)
+    minutes = (length % (60 * 24)) / 60
+    seconds = length % 60
+    return question("The length of this guide is %i hours %i minutes and %i seconds" %(hours, minutes, seconds))
+
+#Number of instructions
+@ask.intent("NumberInstructionsIntent")
+def numinstructions_intent():
+    return question("The number of instructions in this guide is %i" %len(steps))
 
 
 @ask.intent("NextPicture")
 def next_picture_intent():
     global image_num
-    good_images
+    global good_images
     image_num += 1
     if image_num >= len(good_images):
         return question("There are no more images for this step.")
@@ -140,6 +203,8 @@ def next_picture_intent():
                                       content=image.original).reprompt("I didn't catch that. "
                                                                        "Can you please repeat what you said?")
 
+
+# Helper methods
 def get_guides(search):
     global guides
     guides = Category(search).guides
@@ -156,6 +221,7 @@ def select_guide_index(index):
     steps = guide.steps
     instruction_num = -1
     return True
+
 
 def select_guide(title):
     global guide
@@ -181,6 +247,21 @@ def text_for_step(step):
 def get_guide_titles():
     titles = [g.title for g in guides]
     return titles
+
+#Get's the stored previous state of the session
+def get_state():
+    return session.attributes.get(SOURCE_STATE)
+
+
+def set_state(state):
+    session.attributes[SOURCE_STATE] = state
+
+
+def error_exit():
+    # TODO: Return to source state's intent
+    logger.info("Search state did not follow start state")
+    return statement("There was an error. Goodbye")
+
 
 if __name__ == '__main__':
     app.run()
