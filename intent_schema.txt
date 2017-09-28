@@ -1,6 +1,9 @@
 {
   "intents": [
     {
+      "intent": "NextPicture"
+    },
+    {
       "intent": "HelloIntent"
     },
     {
