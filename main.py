@@ -47,7 +47,9 @@ def search(item):
         guide_names = guide_names + num + g.title
         i += 1
     return question("Here are your search results. Please select a guide by selecting the corresponding number.")\
-        .simple_card(title="Guides", content=guide_names)
+        .simple_card(title="Guides", content=guide_names).reprompt("I didn't catch that. Please restate the "
+                                                                   "number associated with the guide you would "
+                                                                   "like to start.")
 
 
 @ask.intent("SelectGuideIntent")
@@ -103,11 +105,11 @@ def next_intent():
         reply = "We have sent an image url associated with this step to your Alexa app. " \
                 + text_for_step(steps[instruction_num])
     elif len(good_images) == 0:
-        return question(text_for_step(steps[instruction_num]))
+        return question(text_for_step(steps[instruction_num])).reprompt("Can you repeat that?")
 
     if reply:
         return question(reply).simple_card(title="Step %i" % instruction_num,
-                                           content=good_images[0].original)
+                                           content=good_images[0].original).reprompt("Can you repeat that?")
     else:
         logger.error("good_images was not set correctly!")
         return False
@@ -128,14 +130,15 @@ def previous_intent():
 @ask.intent("NextPicture")
 def next_picture_intent():
     global image_num
-    global good_images
+    good_images
     image_num += 1
     if image_num >= len(good_images):
         return question("There are no more images for this step.")
     image = good_images[image_num]
     text = ": Image {} of {}".format(image_num + 1, len(good_images))
     return question(text).simple_card(title="Step %i" % instruction_num + text,
-                                      content=image.original)
+                                      content=image.original).reprompt("I didn't catch that. "
+                                                                       "Can you please repeat what you said?")
 
 def get_guides(search):
     global guides
