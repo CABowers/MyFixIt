@@ -25,7 +25,13 @@
       "intent": "NumberInstructionsIntent"
     },
     {
-      "intent": "NextPicture"
+      "slots": [
+        {
+          "name": "len_guide_number",
+          "type": "AMAZON.NUMBER"
+        }
+      ],
+      "intent": "LengthOfGuideIntent"
     },
     {
       "slots": [
