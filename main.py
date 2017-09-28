@@ -183,7 +183,7 @@ def lenofguide_intent(len_guide_number):
     hours = length /  (60 * 24)
     minutes = (length % (60 * 24)) / 60
     seconds = length % 60
-    return question("The length of this guide is %i hours %i minutes and %i seconds", hours, minutes, seconds)
+    return question("The length of this guide is %i hours %i minutes and %i seconds" %hours %minutes %seconds)
 
 #Number of instructions
 @ask.intent("NumberInstructionsIntent")
