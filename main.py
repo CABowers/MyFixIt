@@ -33,6 +33,7 @@ good_images = []
 def hello():
     return statement("Hello friendo!")
 
+
 @ask.launch
 def start_skill():
     global instruction_num
@@ -110,7 +111,6 @@ def next_intent():
         for image in steps[instruction_num].media:
             if image.original:
                 good_images.append(image)
-
         if len(good_images) > 1:
             reply = "We have sent the first of %i images to your Alexa app. To get the next image say next image" \
                     % len(good_images) \
@@ -126,7 +126,6 @@ def next_intent():
                                                 content=good_images[0].original).reprompt("Can you repeat that?")
         else:
             logger.error("good_images was not set correctly!")
-
     logger.error("State not correct")
     return error_exit()
 
@@ -179,10 +178,12 @@ def lenofguide_intent(len_guide_number):
         length = select_guide_index(len_guide_number)
     else:
         length = guide.time_required_min
-    hours = length /  (60 * 24)
+    hours = length / (60 * 24)
     minutes = (length % (60 * 24)) / 60
     seconds = length % 60
+
     return question("The length of this guide is %i hours %i minutes and %i seconds" %(hours, minutes, seconds))
+
 
 #Number of instructions
 @ask.intent("NumberInstructionsIntent")
