@@ -97,6 +97,7 @@ def repeat_intent():
 def next_intent():
     global good_images
     global instruction_num
+
     if get_state() == SELECT_GUIDE or get_state() == INSTRUCTIONS:
         set_state(INSTRUCTIONS)
         instruction_num += 1
@@ -108,7 +109,7 @@ def next_intent():
 
         good_images = []
         for image in steps[instruction_num].media:
-            if image.thumbnail and image.original:
+            if image.original:
                 good_images.append(image)
 
         if len(good_images) > 1:
@@ -122,15 +123,13 @@ def next_intent():
             return question(text_for_step(steps[instruction_num]))
 
         if reply:
-            return question(reply).standard_card(title="Step %i" % (instruction_num + 1),
-                                             text="",
-                                             small_image_url=good_images[0].thumbnail,
-                                             large_image_url=good_images[0].original)
+            return question(reply).simple_card(title="Step %i" % (instruction_num + 1),
+                                                content=good_images[0].original)
         else:
             logger.error("good_images was not set correctly!")
-            return error_exit()
-    else:
-        return error_exit()
+    
+    logger.error("State not correct")
+    return error_exit()
 
 
 @ask.intent("AMAZON.PreviousIntent")
@@ -187,6 +186,20 @@ def help_intent():
 @ask.intent("NumberInstructionsIntent")
 def numinstructions_intent():
     return question("The number of instructions in this guide is %i" %len(steps))
+
+
+@ask.intent("NextPicture")
+def next_picture_intent():
+    global image_num
+    global good_images
+    image_num += 1
+    if image_num >= len(good_images):
+        return question("There are no more images for this step.")
+    image = good_images[image_num]
+    text = ": Image {} of {}".format(image_num + 1, len(good_images))
+    return question(text).simple_card(title="Step %i" % instruction_num + text,
+                                      content=image.original)
+
 
 # Helper methods
 def get_guides(search):

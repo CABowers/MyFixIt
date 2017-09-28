@@ -1,3 +1,4 @@
+NextPicture Next Picture
 SearchIntent Search {item}
 SearchIntent Search for {item}
 SearchIntent {item}

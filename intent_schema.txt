@@ -25,6 +25,9 @@
       "intent": "NumberInstructionsIntent"
     },
     {
+      "intent": "NextPicture"
+    },
+    {
       "slots": [
         {
           "name": "item",
