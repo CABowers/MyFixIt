@@ -175,13 +175,13 @@ def help_intent():
     return question(response)
 
 #Length of task
-#@ask.intent("LengthOfGuideIntent")
-#def lenofguide_intent(len_guide_number):
-#    if isinstance(len_guide_number, int):
-#        length = select_guide_index(len_guide_number)
-#    else:
-#        length = guide.attributes['time required']
-#    return question("The length of this guide is " + length)
+@ask.intent("LengthOfGuideIntent")
+def lenofguide_intent(len_guide_number):
+    if isinstance(len_guide_number, int):
+        length = select_guide_index(len_guide_number)
+    else:
+        length = guide.time_required_min
+    return question("The length of this guide is " + length)
 
 #Number of instructions
 @ask.intent("NumberInstructionsIntent")
