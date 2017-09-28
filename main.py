@@ -181,7 +181,7 @@ def lenofguide_intent(len_guide_number):
         length = select_guide_index(len_guide_number)
     else:
         length = guide.time_required_min
-    hours = length / (60 * 24)
+    hours = length /  (60 * 24)
     minutes = (length % (60 * 24)) / 60
     seconds = length % 60
     return question("The length of this guide is %i hours %i minutes and %i seconds", hours, minutes, seconds)
