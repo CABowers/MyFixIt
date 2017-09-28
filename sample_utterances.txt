@@ -8,3 +8,4 @@ SelectGuideIntent Guide number {guide_number}
 HelpIntent Help
 HelpIntent I don't know what to do
 NumberInstructionsIntent How many instructions are there
+LengthOfGuideIntent What is the length of guide {len_guide_number}
