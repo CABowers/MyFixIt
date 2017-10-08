@@ -189,6 +189,22 @@ def lenofguide_intent(len_guide_number):
 def numinstructions_intent():
     return question("The number of instructions in this guide is %i" %len(steps))
 
+#Current instruction
+@ask.intent("CurrentInstructionIntent")
+def curinstruction_intent():
+    return question("The current instruction number for the current guide is %i" %session.attributes['instruction_num'])
+
+#Number of instructions remaining
+@ask.intent("InstructionsLeftIntent")
+def instructionsleft_intent():
+    instructions_left = len(steps) - session.attributes['instruction_num']
+    return question("The number of instructions left in this guide is %i" %instructions_left)
+
+#Difficulty of the instruction guide
+@ask.intent("DifficultyIntent")
+def difficulty_intent():
+    return question("The difficulty of the guide is %i" %guide.difficulty)
+
 
 @ask.intent("NextPicture")
 def next_picture_intent():

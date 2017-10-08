@@ -9,3 +9,6 @@ LengthOfGuideIntent What is the length of guide {len_guide_number}
 HelpIntent Help
 HelpIntent I don't know what to do
 NumberInstructionsIntent How many instructions are there
+CurrentInstructionIntent What instruction number am I on
+InstructionsLeftIntent How many instructions are left
+DifficultyIntent What is the difficulty of this guide

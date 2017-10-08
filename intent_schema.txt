@@ -28,6 +28,15 @@
       "intent": "NumberInstructionsIntent"
     },
     {
+      "intent": "CurrentInstructionIntent"
+    },
+    {
+      "intent": "InstructionsLeftIntent"
+    },
+    {
+      "intent": "DifficultyIntent"
+    },
+    {
       "slots": [
         {
           "name": "len_guide_number",
