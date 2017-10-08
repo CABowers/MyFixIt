@@ -194,7 +194,7 @@ def numinstructions_intent():
 def curinstruction_intent():
     num = session.attributes['instruction_num']
     num = num + 1
-    if (num <= 0):
+    if num <= 0:
         return question("You have not started any instructions yet. Say next to go to the first instruction.")
     return question("The current instruction number for the current guide is %i" %num)
 
@@ -207,7 +207,7 @@ def instructionsleft_intent():
 #Difficulty of the instruction guide
 @ask.intent("DifficultyIntent")
 def difficulty_intent():
-    return question("The difficulty of the guide is %i" %guide.difficulty)
+    return question("The difficulty of the guide is " + guide.difficulty)
 
 
 @ask.intent("NextPicture")
