@@ -192,7 +192,11 @@ def numinstructions_intent():
 #Current instruction
 @ask.intent("CurrentInstructionIntent")
 def curinstruction_intent():
-    return question("The current instruction number for the current guide is %i" %session.attributes['instruction_num'])
+    num = session.attributes['instruction_num']
+    num = num + 1
+    if (num <= 0):
+        return question("You have not started any instructions yet. Say next to go to the first instruction.")
+    return question("The current instruction number for the current guide is %i" %num)
 
 #Number of instructions remaining
 @ask.intent("InstructionsLeftIntent")
