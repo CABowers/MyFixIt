@@ -36,7 +36,7 @@ def hello():
 def start_skill():
     session.attributes['instruction_num'] = -1
     session.attributes[SOURCE_STATE] = START
-    return question('What do you want to fix today?').reprompt("I missed that. What do you want to fix today?")
+    return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
 
 
 @ask.intent("SearchIntent")
@@ -67,8 +67,8 @@ def selectguide(guide_number):
         found = select_guide_index(int(guide_number) - 1)
         set_state(SELECT_GUIDE)
         if found:
-            return question("You have selected guide {} . Say next to begin instructions".format(guide.title))
-        return question("Please select a valid guide.")
+            return question("You have selected guide {} . Say next to begin instructions".format(guide.title)).reprompt("Please say next to continue.")
+        return question("Please select a valid guide.").reprompt("You must state the number next to the guide title on the list sent to your phone.")
     else:
         return error_exit()
 
