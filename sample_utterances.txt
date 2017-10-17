@@ -2,9 +2,14 @@ NextPicture Next Picture
 SearchIntent Search {item}
 SearchIntent Search for {item}
 SearchIntent {item}
+SearchIntent my {item}
 SearchIntent I want to fix my {item}
+DifficultyIntent What is the difficulty
 SelectGuideIntent {guide_number}
 SelectGuideIntent Guide number {guide_number}
+LengthOfGuideIntent What is the length of guide {len_guide_number}
 HelpIntent Help
 HelpIntent I don't know what to do
 NumberInstructionsIntent How many instructions are there
+CurrentInstructionIntent What instruction number am I on
+InstructionsLeftIntent How many instructions are left

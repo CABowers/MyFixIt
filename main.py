@@ -7,8 +7,6 @@ logger = logging.getLogger()
 
 app = Flask(__name__)
 ask = Ask(app, "/")
-instruction_num = -1
-
 
 SOURCE_STATE = 'source_state'
 # LIST OF STATES
@@ -36,8 +34,7 @@ def hello():
 
 @ask.launch
 def start_skill():
-    global instruction_num
-    instruction_num = -1
+    session.attributes['instruction_num'] = -1
     session.attributes[SOURCE_STATE] = START
     return question('What do you want to fix today?').reprompt("I missed that. What do you want to fix today?")
 
@@ -78,14 +75,14 @@ def selectguide(guide_number):
 
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
-    global instruction_num
-    instruction_num = -1
+    session.attributes['instruction_num'] = -1
     set_state(NO)
     return statement("Goodbye")
 
 
 @ask.intent("AMAZON.RepeatIntent")
 def repeat_intent():
+    instruction_num = session.attributes['instruction_num']
     if instruction_num < 0:
         return question(no_steps)
     if instruction_num > len(steps):
@@ -96,7 +93,7 @@ def repeat_intent():
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
     global good_images
-    global instruction_num
+    instruction_num = session.attributes['instruction_num']
 
     if get_state() == SELECT_GUIDE or get_state() == INSTRUCTIONS:
         set_state(INSTRUCTIONS)
@@ -104,9 +101,9 @@ def next_intent():
         if instruction_num < 0:
             return question(no_steps)
         if instruction_num >= len(steps):
-            instruction_num -= 1
+            session.attributes['instruction_num'] -= 1
             return question(done_steps).reprompt("I missed that." + done_steps)
-
+        session.attributes['instruction_num'] = instruction_num
         good_images = []
         for image in steps[instruction_num].media:
             if image.original:
@@ -133,11 +130,13 @@ def next_intent():
 @ask.intent("AMAZON.PreviousIntent")
 def previous_intent():
     if get_state() == INSTRUCTIONS:
-        global instruction_num
+        instruction_num = session.attributes['instruction_num']
         instruction_num -= 1
+        session.attributes['instruction_num'] = instruction_num
         set_state(INSTRUCTIONS) #Redundant but it's safer to be explicit
         if instruction_num < 0:
             instruction_num += 1
+            session.attributes['instruction_num'] = instruction_num
             return question(no_steps)
         if instruction_num >= len(steps):
             return question(done_steps).reprompt("I missed that." + done_steps)
@@ -190,6 +189,26 @@ def lenofguide_intent(len_guide_number):
 def numinstructions_intent():
     return question("The number of instructions in this guide is %i" %len(steps))
 
+#Current instruction
+@ask.intent("CurrentInstructionIntent")
+def curinstruction_intent():
+    num = session.attributes['instruction_num']
+    num = num + 1
+    if num <= 0:
+        return question("You have not started any instructions yet. Say next to go to the first instruction.")
+    return question("The current instruction number for the current guide is %i" %num)
+
+#Number of instructions remaining
+@ask.intent("InstructionsLeftIntent")
+def instructionsleft_intent():
+    instructions_left = len(steps) - session.attributes['instruction_num']
+    return question("The number of instructions left in this guide is %i" %instructions_left)
+
+#Difficulty of the instruction guide
+@ask.intent("DifficultyIntent")
+def difficulty_intent():
+    return question("The difficulty of the guide is " + guide.difficulty)
+
 
 @ask.intent("NextPicture")
 def next_picture_intent():
@@ -214,26 +233,24 @@ def get_guides(search):
 def select_guide_index(index):
     global guide
     global steps
-    global instruction_num
     if index < 0 or index >= len(guides):
         logger.info("Guide number was not available!")
         return False
     guide = guides[index]
     steps = guide.steps
-    instruction_num = -1
+    session.attributes['instruction_num'] = -1
     return True
 
 
 def select_guide(title):
     global guide
     global steps
-    global instruction_num
     found = False
     for g in guides:
         if g.title.lower() == title.lower():
             guide = g
             steps = g.steps
-            instruction_num = -1
+            session.attributes['instruction_num'] = -1
             found = True
     return found
 
