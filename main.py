@@ -73,6 +73,7 @@ def selectguide(guide_number):
         return error_exit()
 
 
+@ask.intent("AMAZON.StopIntent")
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
     session.attributes['instruction_num'] = -1
