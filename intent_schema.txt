@@ -1,6 +1,9 @@
 {
   "intents": [
     {
+      "intent": "NextPicture"
+    },
+    {
       "intent": "HelloIntent"
     },
     {
@@ -8,6 +11,9 @@
     },
     {
       "intent": "AMAZON.NoIntent"
+    },
+    {
+      "intent": "AMAZON.StopIntent"
     },
     {
       "intent": "AMAZON.RepeatIntent"
@@ -25,7 +31,22 @@
       "intent": "NumberInstructionsIntent"
     },
     {
-      "intent": "NextPicture"
+      "intent": "CurrentInstructionIntent"
+    },
+    {
+      "intent": "InstructionsLeftIntent"
+    },
+    {
+      "intent": "DifficultyIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "len_guide_number",
+          "type": "AMAZON.NUMBER"
+        }
+      ],
+      "intent": "LengthOfGuideIntent"
     },
     {
       "slots": [
