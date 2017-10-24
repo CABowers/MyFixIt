@@ -13,6 +13,9 @@
       "intent": "AMAZON.NoIntent"
     },
     {
+      "intent": "AMAZON.StopIntent"
+    },
+    {
       "intent": "AMAZON.RepeatIntent"
     },
     {

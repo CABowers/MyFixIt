@@ -62,7 +62,7 @@ def search(item):
 
 
 @ask.intent("SelectGuideIntent")
-def selectguide(guide_number):
+def select_guide(guide_number):
     if get_state() == SEARCH or get_state() == SELECT_GUIDE:
         found = select_guide_index(int(guide_number) - 1)
         set_state(SELECT_GUIDE)
@@ -73,6 +73,7 @@ def selectguide(guide_number):
         return error_exit()
 
 
+@ask.intent("AMAZON.StopIntent")
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
     session.attributes['instruction_num'] = -1
@@ -170,9 +171,9 @@ def help_intent():
         response == "Please say next if you have selected a valid guide"
     return question(response).reprompt("I don't understand. Can you repeat that?")
 
-#Length of task
+# Length of task
 @ask.intent("LengthOfGuideIntent")
-def lenofguide_intent(len_guide_number):
+def len_of_guide_intent(len_guide_number):
     if isinstance(len_guide_number, int):
         length = select_guide_index(len_guide_number)
     else:
@@ -184,28 +185,27 @@ def lenofguide_intent(len_guide_number):
     return question("The length of this guide is %i hours %i minutes and %i seconds" %(hours, minutes, seconds)).reprompt("Say next to continue to the instructions.")
 
 
-#Number of instructions
+# Number of instructions
 @ask.intent("NumberInstructionsIntent")
-def numinstructions_intent():
+def num_instructions_intent():
     return question("The number of instructions in this guide is %i" %len(steps)).reprompt("Say next to continue to the instructions.")
-")
 
-#Current instruction
+# Current instruction
 @ask.intent("CurrentInstructionIntent")
-def curinstruction_intent():
+def cur_instruction_intent():
     num = session.attributes['instruction_num']
     num = num + 1
     if num <= 0:
         return question("You have not started any instructions yet. Say next to go to the first instruction.").reprompt("Say next to continue to the instructions.")
     return question("The current instruction number for the current guide is %i" %num).reprompt("Say next to go to the next step.")
 
-#Number of instructions remaining
+# Number of instructions remaining
 @ask.intent("InstructionsLeftIntent")
-def instructionsleft_intent():
+def instructions_left_intent():
     instructions_left = len(steps) - session.attributes['instruction_num']
     return question("The number of instructions left in this guide is %i" %instructions_left).reprompt("Say next to go to the next step.")
 
-#Difficulty of the instruction guide
+# Difficulty of the instruction guide
 @ask.intent("DifficultyIntent")
 def difficulty_intent():
     return question("The difficulty of the guide is " + guide.difficulty).reprompt("Say next to continue to the instructions.")
@@ -267,7 +267,7 @@ def get_guide_titles():
     titles = [g.title for g in guides]
     return titles
 
-#Get's the stored previous state of the session
+# Gets the stored previous state of the session
 def get_state():
     return session.attributes.get(SOURCE_STATE)
 

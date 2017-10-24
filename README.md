@@ -6,6 +6,9 @@
 2. In the clone of the repository make a virtual environment `virtualenv venv`
 3. Activate the virtual environment: `\. venv\bin\activate` deactivate the virtual environment `deactivate` in Windows it will be in `venv\Scripts\activate`
 4. Install the requirements `pip install -r requirements.txt` with the virtual environment activated
+5. Use Allie's version of PyFixIt
+    + [Clone or fork here](https://github.com/agiddings/pyfixit)
+    + `pip install .` from root directory
 
 ## Setting up Alexa Skill in the Developer Console
 1. Interaction Model:
