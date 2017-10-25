@@ -36,7 +36,7 @@ def hello():
 def start_skill():
     session.attributes['instruction_num'] = -1
     session.attributes[SOURCE_STATE] = START
-    return question('What do you want to fix today?').reprompt("I missed that. What do you want to fix today?")
+    return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
 
 
 @ask.intent("SearchIntent")
@@ -67,8 +67,8 @@ def select_guide(guide_number):
         found = select_guide_index(int(guide_number) - 1)
         set_state(SELECT_GUIDE)
         if found:
-            return question("You have selected guide {} . Say next to begin instructions".format(guide.title))
-        return question("Please select a valid guide.")
+            return question("You have selected guide {} . Say next to begin instructions".format(guide.title)).reprompt("Please say next to continue.")
+        return question("Please select a valid guide.").reprompt("You must state the number next to the guide title on the list sent to your phone.")
     else:
         return error_exit()
 
@@ -88,7 +88,7 @@ def repeat_intent():
         return question(no_steps)
     if instruction_num > len(steps):
         return question(done_steps)
-    return question(text_for_step(steps[instruction_num]))
+    return question(text_for_step(steps[instruction_num])).reprompt("Say next when you are ready to begin the next step.")
 
 
 @ask.intent("AMAZON.NextIntent")
@@ -109,7 +109,6 @@ def next_intent():
         for image in steps[instruction_num].media:
             if image.original:
                 good_images.append(image)
-
         if len(good_images) > 1:
             reply = "We have sent the first of %i images to your Alexa app. To get the next image say next image" \
                     % len(good_images) \
@@ -118,14 +117,13 @@ def next_intent():
             reply = "We have sent an image associated with this step to your Alexa app." \
                     + text_for_step(steps[instruction_num])
         elif len(good_images) == 0:
-            return question(text_for_step(steps[instruction_num]))
+            return question(text_for_step(steps[instruction_num])).reprompt("Can you repeat that?")
 
         if reply:
             return question(reply).simple_card(title="Step %i" % (instruction_num + 1),
-                                                content=good_images[0].original)
+                                                content=good_images[0].original).reprompt("Can you repeat that?")
         else:
             logger.error("good_images was not set correctly!")
-    
     logger.error("State not correct")
     return error_exit()
 
@@ -140,10 +138,10 @@ def previous_intent():
         if instruction_num < 0:
             instruction_num += 1
             session.attributes['instruction_num'] = instruction_num
-            return question(no_steps)
+            return question(no_steps).reprompt("I missed that." + no_steps)
         if instruction_num >= len(steps):
             return question(done_steps).reprompt("I missed that." + done_steps)
-        return question(text_for_step(steps[instruction_num]))
+        return question(text_for_step(steps[instruction_num])).reprompt("Say next to proceed to the next step.")
     else:
         return error_exit()
 
@@ -169,7 +167,7 @@ def help_intent():
         response = "I sent a list of guides to your phone, please tell me the number of the guide you would like to complete."
     elif previous == SELECT_GUIDE:
         response == "Please say next if you have selected a valid guide"
-    return question(response)
+    return question(response).reprompt("I don't understand. Can you repeat that?")
 
 # Length of task
 @ask.intent("LengthOfGuideIntent")
@@ -178,15 +176,17 @@ def len_of_guide_intent(len_guide_number):
         length = select_guide_index(len_guide_number)
     else:
         length = guide.time_required_min
-    hours = length /  (60 * 24)
+    hours = length / (60 * 24)
     minutes = (length % (60 * 24)) / 60
     seconds = length % 60
-    return question("The length of this guide is %i hours %i minutes and %i seconds" %(hours, minutes, seconds))
+
+    return question("The length of this guide is %i hours %i minutes and %i seconds" %(hours, minutes, seconds)).reprompt("Say next to continue to the instructions.")
+
 
 # Number of instructions
 @ask.intent("NumberInstructionsIntent")
 def num_instructions_intent():
-    return question("The number of instructions in this guide is %i" %len(steps))
+    return question("The number of instructions in this guide is %i" %len(steps)).reprompt("Say next to continue to the instructions.")
 
 # Current instruction
 @ask.intent("CurrentInstructionIntent")
@@ -194,19 +194,19 @@ def cur_instruction_intent():
     num = session.attributes['instruction_num']
     num = num + 1
     if num <= 0:
-        return question("You have not started any instructions yet. Say next to go to the first instruction.")
-    return question("The current instruction number for the current guide is %i" %num)
+        return question("You have not started any instructions yet. Say next to go to the first instruction.").reprompt("Say next to continue to the instructions.")
+    return question("The current instruction number for the current guide is %i" %num).reprompt("Say next to go to the next step.")
 
 # Number of instructions remaining
 @ask.intent("InstructionsLeftIntent")
 def instructions_left_intent():
     instructions_left = len(steps) - session.attributes['instruction_num']
-    return question("The number of instructions left in this guide is %i" %instructions_left)
+    return question("The number of instructions left in this guide is %i" %instructions_left).reprompt("Say next to go to the next step.")
 
 # Difficulty of the instruction guide
 @ask.intent("DifficultyIntent")
 def difficulty_intent():
-    return question("The difficulty of the guide is " + guide.difficulty)
+    return question("The difficulty of the guide is " + guide.difficulty).reprompt("Say next to continue to the instructions.")
 
 
 @ask.intent("NextPicture")
@@ -219,7 +219,8 @@ def next_picture_intent():
     image = good_images[image_num]
     text = ": Image {} of {}".format(image_num + 1, len(good_images))
     return question(text).simple_card(title="Step %i" % instruction_num + text,
-                                      content=image.original)
+                                      content=image.original).reprompt("I didn't catch that. "
+                                                                       "Can you please repeat what you said?")
 
 
 # Helper methods
