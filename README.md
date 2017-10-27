@@ -28,3 +28,5 @@ If you don't feel like going through all that, feel free to use this as your ser
 Cole's end point: https://dhfu6hfvyj.execute-api.us-east-1.amazonaws.com/dev
 
 [PyFixIt Wiki:](https://pyfixit.readthedocs.io/en/latest/ "PyFixIt")
+
+# Adding the database
