@@ -47,13 +47,17 @@ def search(item):
             start_skill()
         else:
             get_guides(item)
-        guide_names = ""
-        i = 1
-        for g in guides:
-            num = "\n%i. " % i
-            if g and g.title:
-                guide_names = guide_names + num + g.title
-                i += 1
+        try:
+            guide_names = ""
+            i = 1
+            for g in guides:
+                num = "\n%i. " % i
+                if g and g.title:
+                    guide_names = guide_names + num + g.title
+                    i += 1
+        except Exception, e:
+            logger.info(str(e))
+
         set_state(SEARCH)
         return question("Here are your search results. Please select a guide by selecting the corresponding number.") \
             .simple_card(title="Guides", content=guide_names)
@@ -161,7 +165,9 @@ PREVIOUS = 'previous'
 def help_intent():
     previous = get_state()
     response = 'You are using the My Fix It skill'
-    if previous == START:
+    if previous == HELP:
+        response = "I'm sorry, I don't know how to help you get help."
+    elif previous == START:
         response = "Please tell me what you would like to fix today, and I will guide you through the process."
     elif previous == SEARCH:
         response = "I sent a list of guides to your phone, please tell me the number of the guide you would like to complete."
@@ -222,6 +228,15 @@ def next_picture_intent():
                                       content=image.original).reprompt("I didn't catch that. "
                                                                        "Can you please repeat what you said?")
 
+@ask.intent("FlagsIntent")
+def flags_intent():
+    if guide:
+        statement = "The flags for this guide are"
+        for flag in guide.flags:
+            statement += ", " + flag.title 
+    else:
+        statement = "You have not selected a guide, so I cannot tell you the flags"
+    return question(statement)
 
 # Helper methods
 def get_guides(search):
@@ -282,3 +297,5 @@ def error_exit():
 
 if __name__ == '__main__':
     app.run()
+
+
