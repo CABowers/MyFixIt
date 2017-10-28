@@ -40,6 +40,9 @@
       "intent": "DifficultyIntent"
     },
     {
+      "intent": "FlagsIntent"
+    },
+    {
       "slots": [
         {
           "name": "len_guide_number",
