@@ -32,9 +32,9 @@ good_images = []
 def hello():
     return statement("Hello friendo!")
 
-
 @ask.launch
 def start_skill():
+    set_state(START)
     session.attributes['instruction_num'] = -1
     session.attributes[SOURCE_STATE] = START
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
@@ -45,8 +45,11 @@ def start_skill():
         return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
     return question('Would you like to continue a previous project?').reprompt('You can continue an old project or start a new one.')
 
+@ask.intent("AMAZON.YesIntent")
+def yesintent():
+    load_bookmark()
+    return question('Say next to go to the next question').reprompt("Say next")
 
-@ask.intent('LoadBookmarkIntent')
 def load_bookmark():
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     table = dynamodb.Table('Bookmark')
@@ -59,7 +62,6 @@ def load_bookmark():
     guide = guides[0]
     global step
     step = bookmark['step']
-    return question('Say next to go to the next question')
 
 
 @ask.intent("SearchIntent")
@@ -99,11 +101,12 @@ def select_guide(guide_number):
 @ask.intent("AMAZON.StopIntent")
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
+    if get_state() == START:
+        return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
     save_bookmark()
     session.attributes['instruction_num'] = -1
     set_state(NO)
     return statement("Goodbye")
-
 
 def save_bookmark():
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')

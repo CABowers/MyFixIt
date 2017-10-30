@@ -4,7 +4,6 @@ SearchIntent Search for {item}
 SearchIntent {item}
 SearchIntent my {item}
 SearchIntent I want to fix my {item}
-SearchIntent no
 DifficultyIntent What is the difficulty
 SelectGuideIntent {guide_number}
 SelectGuideIntent Guide number {guide_number}
@@ -14,4 +13,3 @@ HelpIntent I don't know what to do
 NumberInstructionsIntent How many instructions are there
 CurrentInstructionIntent What instruction number am I on
 InstructionsLeftIntent How many instructions are left
-LoadBookmarkIntent Yes
