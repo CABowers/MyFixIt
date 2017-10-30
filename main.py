@@ -82,16 +82,17 @@ def no_intent():
     set_state(NO)
     return statement("Goodbye")
 
+
 def save_bookmark():
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     table = dynamodb.Table('Bookmark')
     logger.info("\n**********************************\n")
     logger.info(table.put_item(TableName='Bookmark',
-                   Item={'user_id': {'S': session['user']['userId']},
-                         'guide_id': {'N': guide.id},
-                         'guide_title': {'S': guide.title},
-                         'step': {'N': session.attributes['instruction_num']}}))
-    logger.info(table.get_item(TableNam='Bookmark', Key={'user_id': session['user']['userId']}))
+                   Item={'user_id': "%s" % session['user']['userId'],
+                         'guide_id': guide.id,
+                         'guide_title': guide.title,
+                         'step': session.attributes['instruction_num']}))
+
 
 @ask.intent("AMAZON.RepeatIntent")
 def repeat_intent():
