@@ -39,7 +39,6 @@ def start_skill():
     session.attributes[SOURCE_STATE] = START
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     table = dynamodb.Table('Bookmark')
-    logger.info("\n**********************************\n")
     bookmark = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
     logger.info(bookmark)
     if bookmark is None:
@@ -114,7 +113,8 @@ def save_bookmark():
                    Item={'user_id': "%s" % session['user']['userId'],
                          'guide_id': guide.id,
                          'guide_title': guide.title,
-                         'step': session.attributes['instruction_num']}))
+                         'step': session.attributes['instruction_num']
+                        }))
 
 
 @ask.intent("AMAZON.RepeatIntent")
