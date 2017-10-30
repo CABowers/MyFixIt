@@ -47,6 +47,7 @@ def start_skill():
 
 @ask.intent('LoadBookmarkIntent')
 def load_bookmark():
+    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     table = dynamodb.Table('Bookmark')
     logger.info("\n**********************************\n")
     bookmark = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
