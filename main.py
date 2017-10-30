@@ -32,13 +32,31 @@ good_images = []
 def hello():
     return statement("Hello friendo!")
 
-
 @ask.launch
 def start_skill():
     session.attributes['instruction_num'] = -1
     session.attributes[SOURCE_STATE] = START
-    return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
+    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+    table = dynamodb.Table('Bookmark')
+    logger.info("\n**********************************\n")
+    bookmark = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
+    logger.info(bookmark)
+    if bookmark is None:
+        return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
+    return('Would you like to continue a previous project?').reprompt('You can continue an old project or start a new one.')
 
+@ask.intent('LoadBookmarkIntent')
+def load_bookmark():
+    table = dynamodb.Table('Bookmark')
+    logger.info("\n**********************************\n")
+    bookmark = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
+    guide_id = bookmark['guide_id']
+    global guides
+    guides = pyfixit.all(guideids=guide_id)
+    global guide
+    guide = guides[0]
+    global step
+    step = bookmark['step']
 
 @ask.intent("SearchIntent")
 def search(item):
@@ -91,7 +109,7 @@ def save_bookmark():
                          'guide_id': {'N': guide.id},
                          'guide_title': {'S': guide.title},
                          'step': {'N': session.attributes['instruction_num']}}))
-    logger.info(table.get_item(TableNam='Bookmark', Key={'user_id': session['user']['userId']}))
+    logger.info(table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']}))
 
 @ask.intent("AMAZON.RepeatIntent")
 def repeat_intent():
