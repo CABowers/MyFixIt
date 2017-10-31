@@ -18,13 +18,14 @@ YES = 'yes'
 NO = 'no'
 INSTRUCTIONS = 'instructions'
 
-STEPS = 'steps'
-GUIDE = 'guide'
-GUIDES = 'guides'
-NO_STEPS = 'no_steps'
-DONE_STEPS = 'done_steps'
-IMAGE_NUM = 'image_num'
-GOOD_IMAGES = 'good_images'
+steps = []
+guide = None
+guides = None
+no_steps = "There are no previous instructions."
+done_steps = "You have completed the guide."
+
+image_num = 0
+good_images = []
 
 @ask.intent("HelloIntent")
 def hello():
@@ -35,20 +36,11 @@ def hello():
 def start_skill():
     session.attributes['instruction_num'] = -1
     session.attributes[SOURCE_STATE] = START
-    session.attributes[DONE_STEPS] = "You have completed the guide."
-    session.attributes[NO_STEPS] = "There are no previous instructions."
-    session.attributes[STEPS] = []
-    session.attributes[GUIDE] = None;
-    session.attributes[GUIDES] = None;
-    session.attributes[IMAGE_NUM] = 0
-    session.attributes[GOOD_IMAGES] = [];
-
     return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
 
 
 @ask.intent("SearchIntent")
 def search(item):
-    guides = get_attribute(GUIDES)
     if get_state() == START:
         if item is None:
             logger.info("Item is None")
@@ -95,31 +87,29 @@ def no_intent():
 
 @ask.intent("AMAZON.RepeatIntent")
 def repeat_intent():
-    steps = get_attribute(STEPS)
     instruction_num = session.attributes['instruction_num']
     if instruction_num < 0:
-        return question(get_attribute(NO_STEPS))
+        return question(no_steps)
     if instruction_num > len(steps):
-        return question(get_attribute(DONE_STEPS))
+        return question(done_steps)
     return question(text_for_step(steps[instruction_num])).reprompt("Say next when you are ready to begin the next step.")
 
 
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
-    good_images = get_attribute(GOOD_IMAGES)
+    global good_images
     instruction_num = session.attributes['instruction_num']
-    steps = get_attribute(STEPS)
+
     if get_state() == SELECT_GUIDE or get_state() == INSTRUCTIONS:
         set_state(INSTRUCTIONS)
         instruction_num += 1
         if instruction_num < 0:
-            return question(get_attribute(NO_STEPS))
+            return question(no_steps)
         if instruction_num >= len(steps):
             session.attributes['instruction_num'] -= 1
-            return question(get_attribute(DONE_STEPS)).reprompt("I missed that." + get_attribute(DONE_STEPS))
+            return question(done_steps).reprompt("I missed that." + done_steps)
         session.attributes['instruction_num'] = instruction_num
-        empty_array = []
-        set_attribute(good_images, empty_array)
+        good_images = []
         for image in steps[instruction_num].media:
             if image.original:
                 good_images.append(image)
@@ -144,7 +134,6 @@ def next_intent():
 
 @ask.intent("AMAZON.PreviousIntent")
 def previous_intent():
-    steps = get_attribute(STEPS)
     if get_state() == INSTRUCTIONS:
         instruction_num = session.attributes['instruction_num']
         instruction_num -= 1
@@ -153,9 +142,9 @@ def previous_intent():
         if instruction_num < 0:
             instruction_num += 1
             session.attributes['instruction_num'] = instruction_num
-            return question(get_attribute(NO_STEPS)).reprompt("I missed that." + get_attribute(NO_STEPS))
+            return question(no_steps).reprompt("I missed that." + no_steps)
         if instruction_num >= len(steps):
-            return question(get_attribute(DONE_STEPS)).reprompt("I missed that." + get_attribute(DONE_STEPS))
+            return question(done_steps).reprompt("I missed that." + done_steps)
         return question(text_for_step(steps[instruction_num])).reprompt("Say next to proceed to the next step.")
     else:
         return error_exit()
@@ -175,7 +164,6 @@ PREVIOUS = 'previous'
 @ask.intent("HelpIntent")
 def help_intent():
     previous = get_state()
-    steps = get_attribute(STEPS)
     response = 'You are using the My Fix It skill'
     if previous == HELP:
         response = "I'm sorry, I don't know how to help you get help."
@@ -204,7 +192,6 @@ def len_of_guide_intent(len_guide_number):
 # Number of instructions
 @ask.intent("NumberInstructionsIntent")
 def num_instructions_intent():
-    steps = get_attribute(STEPS)
     return question("The number of instructions in this guide is %i" %len(steps)).reprompt("Say next to continue to the instructions.")
 
 # Current instruction
@@ -219,7 +206,6 @@ def cur_instruction_intent():
 # Number of instructions remaining
 @ask.intent("InstructionsLeftIntent")
 def instructions_left_intent():
-    steps = get_attribute(STEPS)
     instructions_left = len(steps) - session.attributes['instruction_num']
     return question("The number of instructions left in this guide is %i" %instructions_left).reprompt("Say next to go to the next step.")
 
@@ -231,11 +217,9 @@ def difficulty_intent():
 
 @ask.intent("NextPicture")
 def next_picture_intent():
-    image_num = get_attribute(IMAGE_NUM)
-    good_images = get_attribute(GOOD_IMAGES)
-    instruction_num = get_attribute('instruction_num')
-    set_attribute(IMAGE_NUM, image_num + 1)
-    image_num = get_attribute(IMAGE_NUM)
+    global image_num
+    global good_images
+    image_num += 1
     if image_num >= len(good_images):
         return question("There are no more images for this step.")
     image = good_images[image_num]
@@ -256,27 +240,30 @@ def flags_intent():
 
 # Helper methods
 def get_guides(search):
-    set_attribute(GUIDES, Category(search).guides)
+    global guides
+    guides = Category(search).guides
+
 
 def select_guide_index(index):
-    guide = get_attribute(GUIDE)
-    guides = get_attribute(GUIDES)
+    global guide
+    global steps
     if index < 0 or index >= len(guides):
         logger.info("Guide number was not available!")
         return False
-    set_attribute(GUIDE, guides[index])
-    set_attribute(STEPS, guide.steps)
+    guide = guides[index]
+    steps = guide.steps
     session.attributes['instruction_num'] = -1
     return True
 
 
 def select_guide(title):
-    guides = get_attribute(GUIDES)
+    global guide
+    global steps
     found = False
     for g in guides:
         if g.title.lower() == title.lower():
-            set_attribute(GUIDE, g)
-            set_attribute(STEPS, g.steps)
+            guide = g
+            steps = g.steps
             session.attributes['instruction_num'] = -1
             found = True
     return found
@@ -290,7 +277,6 @@ def text_for_step(step):
 
 
 def get_guide_titles():
-    guides = get_attribute(GUIDES)
     titles = [g.title for g in guides]
     return titles
 
@@ -298,15 +284,10 @@ def get_guide_titles():
 def get_state():
     return session.attributes.get(SOURCE_STATE)
 
-# Gets the stored session attribute
-def get_attribute(state):
-    return session.attributes.get(state)
 
 def set_state(state):
     session.attributes[SOURCE_STATE] = state
 
-def set_attribute(state, value):
-    session.attributes[state] = value
 
 def error_exit():
     # TODO: Return to source state's intent
