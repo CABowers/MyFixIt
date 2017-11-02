@@ -37,6 +37,9 @@
       "intent": "InstructionsLeftIntent"
     },
     {
+      "intent": "ToolsIntent"
+    },
+    {
       "intent": "DifficultyIntent"
     },
     {
