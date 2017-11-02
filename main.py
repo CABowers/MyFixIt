@@ -18,6 +18,7 @@ YES = 'yes'
 NO = 'no'
 INSTRUCTIONS = 'instructions'
 INSTRUCTION_NUM = 'instruction_num'
+IMAGE_NUM = 'image_num'
 
 steps = []
 guide = None
@@ -27,7 +28,6 @@ guides = None
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide."
 
-image_num = 0
 good_images = []
 
 @ask.intent("HelloIntent")
@@ -39,6 +39,7 @@ def hello():
 def start_skill():
     session.attributes[INSTRUCTION_NUM] = -1
     session.attributes[SOURCE_STATE] = START
+    session.attributes[IMAGE_NUM] = 0;
     return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
 
 
@@ -220,9 +221,11 @@ def difficulty_intent():
 
 @ask.intent("NextPicture")
 def next_picture_intent():
-    global image_num
+    image_num = session.attributes[IMAGE_NUM];
+    instruction_num = session.attributes[INSTRUCTION_NUM]
     global good_images
     image_num += 1
+    session.attributes[IMAGE_NUM] = image_num;
     if image_num >= len(good_images):
         return question("There are no more images for this step.")
     image = good_images[image_num]
