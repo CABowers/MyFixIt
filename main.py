@@ -199,7 +199,7 @@ def tools_intent():
     display_list = ""
     for tool in tools_list:
         if tool["text"]:
-            display_list = display_list + "- " + tool["text"] + " (" + tool["quantity"] + ")"
+            display_list = display_list + "- " + tool["text"] + " (" + tool["quantity"] + ")\n"
     return question("I have sent a list of tools you will need to your Alexa app.").simple_card(title="Tools Required",
 																								content=display_list)\
 		.reprompt("Say next to continue to the next instruction.")
