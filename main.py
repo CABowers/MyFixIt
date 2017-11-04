@@ -2,8 +2,6 @@ from flask import Flask
 from flask_ask import Ask, statement, question, session
 from pyfixit import *
 import logging
-import jsonpickle
-
 
 logger = logging.getLogger()
 
@@ -21,9 +19,9 @@ NO = 'no'
 INSTRUCTIONS = 'instructions'
 INSTRUCTION_NUM = 'instruction_num'
 IMAGE_NUM = 'image_num'
-GUIDE = 'guide'
 
 steps = []
+guide = None
 guides = None
 
 # Strings used for responses so no need to store as session attributes
@@ -41,7 +39,7 @@ def hello():
 def start_skill():
     session.attributes[INSTRUCTION_NUM] = -1
     session.attributes[SOURCE_STATE] = START
-    session.attributes[IMAGE_NUM] = 0
+    session.attributes[IMAGE_NUM] = 0;
     return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
 
 
@@ -223,11 +221,11 @@ def difficulty_intent():
 
 @ask.intent("NextPicture")
 def next_picture_intent():
-    image_num = session.attributes[IMAGE_NUM]
+    image_num = session.attributes[IMAGE_NUM];
     instruction_num = session.attributes[INSTRUCTION_NUM]
     global good_images
     image_num += 1
-    session.attributes[IMAGE_NUM] = image_num
+    session.attributes[IMAGE_NUM] = image_num;
     if image_num >= len(good_images):
         return question("There are no more images for this step.")
     image = good_images[image_num]
@@ -238,8 +236,6 @@ def next_picture_intent():
 
 @ask.intent("FlagsIntent")
 def flags_intent():
-    guide = session.attributes[GUIDE]
-    guide = jsonpickle.decode(guide)
     if guide:
         statement = "The flags for this guide are"
         for flag in guide.flags:
@@ -255,23 +251,24 @@ def get_guides(search):
 
 
 def select_guide_index(index):
+    global guide
     global steps
     if index < 0 or index >= len(guides):
         logger.info("Guide number was not available!")
         return False
-
-    session.attributes[GUIDE] = jsonpickle.encode(guides[index], keys=True)
-    steps = guides[index].steps
+    guide = guides[index]
+    steps = guide.steps
     session.attributes[INSTRUCTION_NUM] = -1
     return True
 
 
 def select_guide(title):
+    global guide
     global steps
     found = False
     for g in guides:
         if g.title.lower() == title.lower():
-            session.attributes[GUIDE] = jsonpickle.encode(g)
+            guide = g
             steps = g.steps
             session.attributes[INSTRUCTION_NUM] = -1
             found = True
