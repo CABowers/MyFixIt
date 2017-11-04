@@ -24,7 +24,6 @@ IMAGE_NUM = 'image_num'
 GUIDE = 'guide'
 
 steps = []
-#guide = None
 guides = None
 
 # Strings used for responses so no need to store as session attributes
@@ -224,11 +223,11 @@ def difficulty_intent():
 
 @ask.intent("NextPicture")
 def next_picture_intent():
-    image_num = session.attributes[IMAGE_NUM];
+    image_num = session.attributes[IMAGE_NUM]
     instruction_num = session.attributes[INSTRUCTION_NUM]
     global good_images
     image_num += 1
-    session.attributes[IMAGE_NUM] = image_num;
+    session.attributes[IMAGE_NUM] = image_num
     if image_num >= len(good_images):
         return question("There are no more images for this step.")
     image = good_images[image_num]
@@ -261,9 +260,7 @@ def select_guide_index(index):
         logger.info("Guide number was not available!")
         return False
     session.attributes[GUIDE] = jsonpickle.encode(guides[index])
-    guide = jsonpickle.decode(session.attributes[GUIDE])
-
-    steps = guide.steps
+    steps = guides[index].steps
     session.attributes[INSTRUCTION_NUM] = -1
     return True
 
