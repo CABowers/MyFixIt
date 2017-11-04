@@ -224,7 +224,7 @@ def next_picture_intent():
         return question("There are no more images for this step.")
     image = good_images[image_num]
     text = ": Image {} of {}".format(image_num + 1, len(good_images))
-    return question(text).simple_card(title="Step %i" % instruction_num + text,
+    return question(text).simple_card(title="Step %i" % (session.attributes['instruction_num'] + 1) + text,
                                       content=image.original).reprompt("I didn't catch that. "
                                                                        "Can you please repeat what you said?")
 
