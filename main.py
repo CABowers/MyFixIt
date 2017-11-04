@@ -17,14 +17,17 @@ SELECT_GUIDE = 'select_guide'
 YES = 'yes'
 NO = 'no'
 INSTRUCTIONS = 'instructions'
+INSTRUCTION_NUM = 'instruction_num'
+IMAGE_NUM = 'image_num'
 
 steps = []
 guide = None
 guides = None
+
+# Strings used for responses so no need to store as session attributes
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide."
 
-image_num = 0
 good_images = []
 
 @ask.intent("HelloIntent")
@@ -34,8 +37,9 @@ def hello():
 
 @ask.launch
 def start_skill():
-    session.attributes['instruction_num'] = -1
+    session.attributes[INSTRUCTION_NUM] = -1
     session.attributes[SOURCE_STATE] = START
+    session.attributes[IMAGE_NUM] = 0;
     return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
 
 
@@ -80,14 +84,14 @@ def select_guide(guide_number):
 @ask.intent("AMAZON.StopIntent")
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
-    session.attributes['instruction_num'] = -1
+    session.attributes[INSTRUCTION_NUM] = -1
     set_state(NO)
     return statement("Goodbye")
 
 
 @ask.intent("AMAZON.RepeatIntent")
 def repeat_intent():
-    instruction_num = session.attributes['instruction_num']
+    instruction_num = session.attributes[INSTRUCTION_NUM]
     if instruction_num < 0:
         return question(no_steps)
     if instruction_num > len(steps):
@@ -98,7 +102,7 @@ def repeat_intent():
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
     global good_images
-    instruction_num = session.attributes['instruction_num']
+    instruction_num = session.attributes[INSTRUCTION_NUM]
 
     if get_state() == SELECT_GUIDE or get_state() == INSTRUCTIONS:
         set_state(INSTRUCTIONS)
@@ -106,9 +110,9 @@ def next_intent():
         if instruction_num < 0:
             return question(no_steps)
         if instruction_num >= len(steps):
-            session.attributes['instruction_num'] -= 1
+            session.attributes[INSTRUCTION_NUM] -= 1
             return question(done_steps).reprompt("I missed that." + done_steps)
-        session.attributes['instruction_num'] = instruction_num
+        session.attributes[INSTRUCTION_NUM] = instruction_num
         good_images = []
         for image in steps[instruction_num].media:
             if image.original:
@@ -135,13 +139,13 @@ def next_intent():
 @ask.intent("AMAZON.PreviousIntent")
 def previous_intent():
     if get_state() == INSTRUCTIONS:
-        instruction_num = session.attributes['instruction_num']
+        instruction_num = session.attributes[INSTRUCTION_NUM]
         instruction_num -= 1
-        session.attributes['instruction_num'] = instruction_num
+        session.attributes[INSTRUCTION_NUM] = instruction_num
         set_state(INSTRUCTIONS) #Redundant but it's safer to be explicit
         if instruction_num < 0:
             instruction_num += 1
-            session.attributes['instruction_num'] = instruction_num
+            session.attributes[INSTRUCTION_NUM] = instruction_num
             return question(no_steps).reprompt("I missed that." + no_steps)
         if instruction_num >= len(steps):
             return question(done_steps).reprompt("I missed that." + done_steps)
@@ -157,7 +161,7 @@ SELECT_GUIDE = 'select_guide'
 YES = 'yes'
 NO = 'no'
 NEXT = 'next'
-PREVIOUS = 'previous' 
+PREVIOUS = 'previous'
 '''
 
 
@@ -197,7 +201,7 @@ def num_instructions_intent():
 # Current instruction
 @ask.intent("CurrentInstructionIntent")
 def cur_instruction_intent():
-    num = session.attributes['instruction_num']
+    num = session.attributes[INSTRUCTION_NUM]
     num = num + 1
     if num <= 0:
         return question("You have not started any instructions yet. Say next to go to the first instruction.").reprompt("Say next to continue to the instructions.")
@@ -206,7 +210,7 @@ def cur_instruction_intent():
 # Number of instructions remaining
 @ask.intent("InstructionsLeftIntent")
 def instructions_left_intent():
-    instructions_left = len(steps) - session.attributes['instruction_num']
+    instructions_left = len(steps) - session.attributes[INSTRUCTION_NUM]
     return question("The number of instructions left in this guide is %i" %instructions_left).reprompt("Say next to go to the next step.")
 
 # Difficulty of the instruction guide
@@ -217,9 +221,11 @@ def difficulty_intent():
 
 @ask.intent("NextPicture")
 def next_picture_intent():
-    global image_num
+    image_num = session.attributes[IMAGE_NUM];
+    instruction_num = session.attributes[INSTRUCTION_NUM]
     global good_images
     image_num += 1
+    session.attributes[IMAGE_NUM] = image_num;
     if image_num >= len(good_images):
         return question("There are no more images for this step.")
     image = good_images[image_num]
@@ -233,7 +239,7 @@ def flags_intent():
     if guide:
         statement = "The flags for this guide are"
         for flag in guide.flags:
-            statement += ", " + flag.title 
+            statement += ", " + flag.title
     else:
         statement = "You have not selected a guide, so I cannot tell you the flags"
     return question(statement)
@@ -252,7 +258,7 @@ def select_guide_index(index):
         return False
     guide = guides[index]
     steps = guide.steps
-    session.attributes['instruction_num'] = -1
+    session.attributes[INSTRUCTION_NUM] = -1
     return True
 
 
@@ -264,7 +270,7 @@ def select_guide(title):
         if g.title.lower() == title.lower():
             guide = g
             steps = g.steps
-            session.attributes['instruction_num'] = -1
+            session.attributes[INSTRUCTION_NUM] = -1
             found = True
     return found
 
