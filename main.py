@@ -41,7 +41,7 @@ def hello():
 def start_skill():
     session.attributes[INSTRUCTION_NUM] = -1
     session.attributes[SOURCE_STATE] = START
-    session.attributes[IMAGE_NUM] = 0;
+    session.attributes[IMAGE_NUM] = 0
     return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
 
 
@@ -259,7 +259,8 @@ def select_guide_index(index):
     if index < 0 or index >= len(guides):
         logger.info("Guide number was not available!")
         return False
-    session.attributes[GUIDE] = jsonpickle.encode(guides[index])
+
+    session.attributes[GUIDE] = jsonpickle.encode(guides[index], keys=True)
     steps = guides[index].steps
     session.attributes[INSTRUCTION_NUM] = -1
     return True
