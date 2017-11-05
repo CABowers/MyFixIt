@@ -43,30 +43,58 @@ def start_skill():
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     table = dynamodb.Table('Bookmark')
     bookmark = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
+    logger.info("*")
     logger.info(bookmark)
-    if bookmark is None:
+    logger.info("**")
+    if bookmark is None or 'Item' not in bookmark or len(bookmark['Item']["bookmarks"]) == 0:
         return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
-    return question('Would you like to continue a previous project?').reprompt('You can continue an old project or start a new one.')
+    return question('Would you like to continue a previous project or manage your bookmarks?').reprompt('Say yes to continue an old project or say no to start a new one.')
 
 
 @ask.intent("AMAZON.YesIntent")
-def yesintent():
-    load_bookmark()
-    return question('Say next to go to the next question').reprompt("Say next")
+def yes_intent():
+    # TODO: Send list of bookmakes to user phone
+    # Can delete or resume
+    return list_bookmarks()
+    # return load_bookmark(0)
+    # return question('Say next to go to the next question').reprompt("Say next")
+
+@ask.intent("ResumeBookmark")
+def resume_bookmark(bookmark_number):
+    # TODO bounds check num
+   return load_bookmark(int(bookmark_number) - 1)
 
 
-def load_bookmark():
+# @ask.intent("DeleteBookmark")
+# def delete_bookmark(num):
+
+
+def load_bookmark(num):
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     table = dynamodb.Table('Bookmark')
-    logger.info("\n**********************************\n")
-    bookmark = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
-    guide_id = bookmark['guide_id']
-    global guides
-    guides = pyfixit.all(guideids=guide_id)
+    bookmarks = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})["Item"]
+    guide_id = bookmarks["bookmarks"][num]['guide_id']
     global guide
-    guide = guides[0]
-    global step
-    step = bookmark['step']
+    guide = Guide(guide_id)
+    global steps
+    steps = guide.steps
+    session.attributes[INSTRUCTION_NUM] = int(bookmarks["bookmarks"][num]['step']) - 1
+    set_state(INSTRUCTIONS)
+    return next_intent()
+
+
+def list_bookmarks():
+    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+    table = dynamodb.Table('Bookmark')
+    bookmarks = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})["Item"]
+    output = ""
+    num = 1
+    for bookmark in bookmarks["bookmarks"]:
+        output += "{}. Step {} for {}\n".format(num, bookmark["step"], bookmark["guide_title"])
+        num += 1
+    return question("Select which bookmark number to resume").simple_card(title="Bookmarks",
+                                                content=output).reprompt("Can you repeat that?")
+
 
 
 @ask.intent("SearchIntent")
@@ -112,21 +140,40 @@ def select_guide(guide_number):
 def no_intent():
     if get_state() == START:
         return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
-    save_bookmark()
+    if guide != None and session.attributes[INSTRUCTION_NUM] != -1:
+        save_bookmark()
     session.attributes[INSTRUCTION_NUM] = -1
+    global guide
+    guide = None
     set_state(NO)
     return statement("Goodbye")
 
 def save_bookmark():
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     table = dynamodb.Table('Bookmark')
-    logger.info("\n**********************************\n")
-    logger.info(table.put_item(TableName='Bookmark',
-                   Item={'user_id': "%s" % session['user']['userId'],
-                         'guide_id': guide.id,
-                         'guide_title': guide.title,
-                         'step': session.attributes['instruction_num']
-                        }))
+    bookmarks = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
+    if bookmarks is None or 'Item' not in bookmarks:
+        table.put_item(TableName='Bookmark',
+                       Item={'user_id': "%s" % session['user']['userId'],
+                             'bookmarks': [{
+                                'guide_id': guide.id,
+                                'guide_title': guide.title,
+                                'step': session.attributes['instruction_num']
+                             }]
+                            })
+    else:
+        bookmarks = bookmarks["Item"]['bookmarks']
+        bookmarks.append({
+                            'guide_id': guide.id,
+                            'guide_title': guide.title,
+                            'step': session.attributes['instruction_num']
+                         })
+        table.put_item(TableName='Bookmark', 
+                Item={
+                    'user_id': "%s" % session['user']['userId'],
+                    'bookmarks': bookmarks
+                })
+
 
 
 @ask.intent("AMAZON.RepeatIntent")
@@ -270,7 +317,7 @@ def next_picture_intent():
         return question("There are no more images for this step.")
     image = good_images[image_num]
     text = ": Image {} of {}".format(image_num + 1, len(good_images))
-    return question(text).simple_card(title="Step %i" % (session.attributes['instruction_num'] + 1) + text,
+    return question(text).simple_card(title="Step %i" % (instruction_num + 1) + text,
                                       content=image.original).reprompt("I didn't catch that. "
                                                                        "Can you please repeat what you said?")
 

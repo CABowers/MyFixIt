@@ -72,6 +72,15 @@
         }
       ],
       "intent": "SelectGuideIntent"
+    },
+    {
+      "slots": [
+        {
+          "name": "bookmark_number",
+          "type": "AMAZON.NUMBER"
+        }
+      ],
+      "intent": "ResumeBookmark"
     }
   ]
 }
