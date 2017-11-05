@@ -81,6 +81,15 @@
         }
       ],
       "intent": "ResumeBookmark"
+    },
+    {
+      "slots": [
+        {
+          "name": "bookmark_number",
+          "type": "AMAZON.NUMBER"
+        }
+      ],
+      "intent": "DeleteBookmark"
     }
   ]
 }
