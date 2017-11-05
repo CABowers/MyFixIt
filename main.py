@@ -2,6 +2,7 @@ from flask import Flask
 from flask_ask import Ask, statement, question, session
 from pyfixit import *
 import logging
+import boto3
 
 logger = logging.getLogger()
 
@@ -40,7 +41,68 @@ def start_skill():
     session.attributes[INSTRUCTION_NUM] = -1
     session.attributes[SOURCE_STATE] = START
     session.attributes[IMAGE_NUM] = 0;
-    return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
+    table = get_database_table()
+    user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
+    if user_entry is None or 'Item' not in user_entry or len(user_entry['Item']["bookmarks"]) == 0:
+        return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
+    return question('Would you like to continue a previous project or manage your bookmarks?').reprompt('Say yes to continue an old project or say no to start a new one.')
+
+
+@ask.intent("AMAZON.YesIntent")
+def yes_intent():
+    if get_state() == START:
+        return list_bookmarks()
+    if get_state() == NO:
+        save_bookmark()
+        session.attributes[INSTRUCTION_NUM] = -1
+        global guide
+        guide = None
+        return statement("Your guide has been bookmarked. Goodbye.")
+
+
+@ask.intent("ResumeBookmark")
+def resume_bookmark(bookmark_number):
+    index = int(bookmark_number) - 1
+    table = get_database_table()
+    user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})["Item"]
+    bookmarks = user_entry["bookmarks"]
+    if index < 0 or index >= len(bookmarks):
+        return question("Select a valid bookmark").reprompt("Select a valid bookmark")
+    guide_id = bookmarks[index]['guide_id']
+    global guide
+    guide = Guide(guide_id)
+    global steps
+    steps = guide.steps
+    session.attributes[INSTRUCTION_NUM] = int(bookmarks[index]['step']) - 1
+    set_state(INSTRUCTIONS)
+    return next_intent()
+
+
+@ask.intent("DeleteBookmark")
+def delete_bookmark(bookmark_number):
+    index = int(bookmark_number) - 1
+    table = get_database_table()
+    bookmarks = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})["Item"]['bookmarks']
+    if index > 0 and index < len(bookmarks):
+        del bookmarks[index]
+        table.put_item(TableName='Bookmark', 
+                Item={
+                    'user_id': "%s" % session['user']['userId'],
+                    'bookmarks': bookmarks
+                })
+    return list_bookmarks()
+
+
+def list_bookmarks():
+    table = get_database_table()
+    user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})["Item"]
+    output = ""
+    num = 1
+    for bookmark in user_entry["bookmarks"]:
+        output += "{}. Step {} for {}\n".format(num, bookmark["step"], bookmark["guide_title"])
+        num += 1
+    return question("Select which bookmark number to resume or delete").simple_card(title="Bookmarks",
+                                                content=output).reprompt("Can you repeat that?")
 
 
 @ask.intent("SearchIntent")
@@ -84,9 +146,44 @@ def select_guide(guide_number):
 @ask.intent("AMAZON.StopIntent")
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
-    session.attributes[INSTRUCTION_NUM] = -1
+    global guide
+    if get_state() == START:
+        return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
+ 
+    if get_state() == INSTRUCTIONS and guide != None and session.attributes[INSTRUCTION_NUM] != -1:
+        set_state(NO)
+        return question('Do you want to save your location in the guide?').reprompt("Sorry, I missed that. Do you want to save your locatoin in the guide?")
     set_state(NO)
+    session.attributes[INSTRUCTION_NUM] = -1
+    guide = None
     return statement("Goodbye")
+
+
+def save_bookmark():
+    table = get_database_table()
+    user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
+    if user_entry is None or 'Item' not in user_entry:
+        table.put_item(TableName='Bookmark',
+                       Item={'user_id': "%s" % session['user']['userId'],
+                             'bookmarks': [{
+                                'guide_id': guide.id,
+                                'guide_title': guide.title,
+                                'step': session.attributes[INSTRUCTION_NUM]
+                             }]
+                            })
+    else:
+        bookmarks = user_entry["Item"]['bookmarks']
+        bookmarks.append({
+                            'guide_id': guide.id,
+                            'guide_title': guide.title,
+                            'step': session.attributes[INSTRUCTION_NUM]
+                         })
+        table.put_item(TableName='Bookmark', 
+                Item={
+                    'user_id': "%s" % session['user']['userId'],
+                    'bookmarks': bookmarks
+                })
+
 
 
 @ask.intent("AMAZON.RepeatIntent")
@@ -230,9 +327,10 @@ def next_picture_intent():
         return question("There are no more images for this step.")
     image = good_images[image_num]
     text = ": Image {} of {}".format(image_num + 1, len(good_images))
-    return question(text).simple_card(title="Step %i" % (session.attributes['instruction_num'] + 1) + text,
+    return question(text).simple_card(title="Step %i" % (instruction_num + 1) + text,
                                       content=image.original).reprompt("I didn't catch that. "
                                                                        "Can you please repeat what you said?")
+
 
 @ask.intent("FlagsIntent")
 def flags_intent():
@@ -300,6 +398,9 @@ def error_exit():
     logger.info("Search state did not follow start state")
     return statement("There was an error. Goodbye")
 
+def get_database_table():
+    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+    return dynamodb.Table('Bookmark')
 
 if __name__ == '__main__':
     app.run()

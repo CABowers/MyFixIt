@@ -28,3 +28,20 @@ If you don't feel like going through all that, feel free to use this as your ser
 Cole's end point: https://dhfu6hfvyj.execute-api.us-east-1.amazonaws.com/dev
 
 [PyFixIt Wiki:](https://pyfixit.readthedocs.io/en/latest/ "PyFixIt")
+
+# Adding the database
+Go to console.aws.amazon.com
+Click on DynamoDB under AWS services (you may need to search)
+Click create table
+Set the name of the table to be "Bookmark" and the primary key is "user_id". We do not have a sort key.
+
+Then go to back to console.aws.amazon.com
+Go to IAM (again you may have to search but mine is under recently visited)
+Click on policies
+Find AmazonDynamoDBFullAccess
+Click on the attached entities tab
+Attach your lambda function
+
+References for dynamodb:
+https://hackernoon.com/my-alexa-skill-with-storage-5adb1d097b88
+http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/WorkingWithItems.html
