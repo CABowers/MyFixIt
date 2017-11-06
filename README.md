@@ -28,8 +28,7 @@ If you don't feel like going through all that, feel free to use this as your ser
 Cole's end point: https://dhfu6hfvyj.execute-api.us-east-1.amazonaws.com/dev
 
 ## PyFixIt
-We had to extend PyFixIt in order to get the right functionality. Install our version of PyFixIt.
-[Our PyFixIt Repo](git@github.com:agiddings/pyfixit.git)
+We had to extend PyFixIt in order to get the right functionality. Install [our version](https://github.com/agiddings/pyfixit) of PyFixIt.
 [PyFixIt Wiki:](https://pyfixit.readthedocs.io/en/latest/ "PyFixIt")
 
 ## Adding the database
