@@ -297,6 +297,21 @@ def len_of_guide_intent(len_guide_number):
 
     return question("The length of this guide is %i hours %i minutes and %i seconds" %(hours, minutes, seconds)).reprompt("Say next to continue to the instructions.")
 
+# Length of task
+@ask.intent("ToolsIntent")
+def tools_intent():
+    if guide.tools is None:
+        return question("There are no tools required for this guide.").reprompt(
+            "Say next to continue to the next instruction.")
+    tools_list = guide.tools
+    display_list = ""
+    for tool in tools_list:
+        if tool["text"]:
+            display_list = display_list + "- " + tool["text"] + " (%i)\n" % tool["quantity"]
+    return question("I have sent a list of tools you will need to your Alexa app.").simple_card(title="Tools Required",
+                                                                                            content=display_list)\
+        .reprompt("Say next to continue to the next instruction.")
+
 # Number of instructions
 @ask.intent("NumberInstructionsIntent")
 def num_instructions_intent():

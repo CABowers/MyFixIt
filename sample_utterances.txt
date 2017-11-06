@@ -14,5 +14,6 @@ FlagsIntent What are the flags
 NumberInstructionsIntent How many instructions are there
 CurrentInstructionIntent What instruction number am I on
 InstructionsLeftIntent How many instructions are left
+ToolsIntent What tools will I need
 ResumeBookmark Resume Bookmark {bookmark_number}
 DeleteBookmark Delete Bookmark {bookmark_number}
