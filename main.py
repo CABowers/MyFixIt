@@ -34,9 +34,13 @@ done_steps = "You have completed the guide."
 
 '''Starting and Exiting the Skill'''
 
-# This function is ran when the skill starts.
-# Initializes the session attributes instruction num, source state, and image num
-# Asks the user if they want to resume a previous project or if they have no bookmarks what they want to fix
+''' This function is ran when the skill starts.
+Initializes the session attributes instruction num, source state, and image num
+Asks the user if they want to resume a previous project or if they have no bookmarks what they want to fix
+
+Returns: If they have bookmarks. Question(Continue a previous project?)
+         If they don't have bookmarks. Question(What do you want to fix today?)
+'''
 @ask.launch
 def start_skill():
     session.attributes[INSTRUCTION_NUM] = -1
@@ -49,9 +53,14 @@ def start_skill():
         return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
     return question('Would you like to continue a previous project or manage your bookmarks?').reprompt('Say yes to continue an old project or say no to start a new one.')
 
-# If you just started, reprompts to ask what you want to fix today
-# If you are in the middle of a guide, asks if you want to save your current guide (bookmarking)
-# Otherwise, it exits the application
+''' If you just started, reprompts to ask what you want to fix today
+If you are in the middle of a guide, asks if you want to save your current guide (bookmarking)
+Otherwise, it exits the application
+
+Returns: If in start state. Question(What do you want to fix today?)
+         If they are in a guide. Question(Do you want to save the guide?)
+         Otherwise. Statement(Goodbye)
+'''
 @ask.intent("AMAZON.StopIntent")
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
@@ -69,15 +78,23 @@ def no_intent():
     guide = None
     return statement("Goodbye")
 
-# Easter Egg (no functional purpose)
+''' Easter Egg (no functional purpose)
+
+Returns: Statement(Hello friendo)
+'''
 @ask.intent("HelloIntent")
 def hello():
     return statement("Hello friendo!")
 
 '''Bookmarking Section'''
 
-# If the user says "Yes" when we ask if they want to resume a previous function, we tell them what the bookmarks are
-# If the user says "Yes" when we ask if they want to save the project, we save it in the database and say goodbye
+'''
+If the user says "Yes" when we ask if they want to resume a previous function, we tell them what the bookmarks are
+If the user says "Yes" when we ask if they want to save the project, we save it in the database and say goodbye
+
+Returns: If start. Question(Select a bookmark)
+Returns: Otherwise. Statement(Your guide has been bookmarked. Bye)
+'''
 @ask.intent("AMAZON.YesIntent")
 def yes_intent():
     if get_state() == START:
@@ -89,7 +106,11 @@ def yes_intent():
         guide = None
         return statement("Your guide has been bookmarked. Goodbye.")
 
-# This intent is where we select the bookmark the user said (based on the number), and start reading instructions
+'''This intent is where we select the bookmark the user said (based on the number), and start reading instructions
+
+Returns: if invalid number. Question(Select a valid bookmark)
+Returns: otherwise. Question(Next instruction)
+'''
 @ask.intent("ResumeBookmark")
 def resume_bookmark(bookmark_number):
     index = int(bookmark_number) - 1
@@ -284,7 +305,7 @@ def help_intent():
 
 '''Features of Guides'''
 
-# Length of task
+# Tells the user the length of guide
 @ask.intent("LengthOfGuideIntent")
 def len_of_guide_intent(len_guide_number):
     if isinstance(len_guide_number, int):
@@ -297,7 +318,7 @@ def len_of_guide_intent(len_guide_number):
 
     return question("The length of this guide is %i hours %i minutes and %i seconds" %(hours, minutes, seconds)).reprompt("Say next to continue to the instructions.")
 
-# Length of task
+# Sends it to the Alexa app
 @ask.intent("ToolsIntent")
 def tools_intent():
     if guide.tools is None:
