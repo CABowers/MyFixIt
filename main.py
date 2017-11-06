@@ -17,6 +17,8 @@ SEARCH = 'search'
 SELECT_GUIDE = 'select_guide'
 YES = 'yes'
 NO = 'no'
+
+
 INSTRUCTIONS = 'instructions'
 INSTRUCTION_NUM = 'instruction_num'
 IMAGE_NUM = 'image_num'
@@ -41,7 +43,7 @@ def start_skill():
     session.attributes[INSTRUCTION_NUM] = -1
     session.attributes[SOURCE_STATE] = START
     session.attributes[IMAGE_NUM] = 0
-    
+
     table = get_database_table()
     user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
     if user_entry is None or 'Item' not in user_entry or len(user_entry['Item']["bookmarks"]) == 0:
@@ -319,11 +321,11 @@ def difficulty_intent():
 
 @ask.intent("NextPicture")
 def next_picture_intent():
-    image_num = session.attributes[IMAGE_NUM];
+    image_num = session.attributes[IMAGE_NUM]
     instruction_num = session.attributes[INSTRUCTION_NUM]
     global good_images
     image_num += 1
-    session.attributes[IMAGE_NUM] = image_num;
+    session.attributes[IMAGE_NUM] = image_num
     if image_num >= len(good_images):
         return question("There are no more images for this step.")
     image = good_images[image_num]
