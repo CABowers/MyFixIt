@@ -18,7 +18,6 @@ SELECT_GUIDE = 'select_guide'
 YES = 'yes'
 NO = 'no'
 
-
 INSTRUCTIONS = 'instructions'
 INSTRUCTION_NUM = 'instruction_num'
 IMAGE_NUM = 'image_num'
