@@ -134,7 +134,7 @@ def list_bookmarks():
     return question("Select which bookmark number to resume or delete").simple_card(title="Bookmarks",
                                                 content=output).reprompt("Can you repeat that?")
 
-# This function saves the current project to the database so the user can resume their project later
+# This helper function saves the current project to the database so the user can resume their project later
 def save_bookmark():
     table = get_database_table()
     user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
@@ -189,6 +189,7 @@ def search(item):
     else:
         return error_exit()
 
+# Uses the number to select the guide from the list. Sets this as the current guide and begins reading instructions.
 @ask.intent("SelectGuideIntent")
 def select_guide(guide_number):
     if get_state() == SEARCH or get_state() == SELECT_GUIDE:
@@ -200,8 +201,9 @@ def select_guide(guide_number):
     else:
         return error_exit()
 
+'''Reading Instructions'''
 
-
+# Rereads the current instruction
 @ask.intent("AMAZON.RepeatIntent")
 def repeat_intent():
     instruction_num = session.attributes[INSTRUCTION_NUM]
@@ -211,6 +213,7 @@ def repeat_intent():
         return question(done_steps)
     return question(text_for_step(steps[instruction_num])).reprompt("Say next when you are ready to begin the next step.")
 
+# Reads the next instruction
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
     global good_images
@@ -247,6 +250,7 @@ def next_intent():
     logger.error("State not correct")
     return error_exit()
 
+# Reads the previous instruction
 @ask.intent("AMAZON.PreviousIntent")
 def previous_intent():
     if get_state() == INSTRUCTIONS:
@@ -277,6 +281,8 @@ def help_intent():
     elif previous == SELECT_GUIDE:
         response == "Please say next if you have selected a valid guide"
     return question(response).reprompt("I don't understand. Can you repeat that?")
+
+'''Features of Guides'''
 
 # Length of task
 @ask.intent("LengthOfGuideIntent")
