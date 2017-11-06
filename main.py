@@ -22,21 +22,21 @@ INSTRUCTIONS = 'instructions'
 INSTRUCTION_NUM = 'instruction_num'
 IMAGE_NUM = 'image_num'
 
+#Global variables
 steps = []
 guide = None
 guides = None
+good_images = []
 
 # Strings used for responses so no need to store as session attributes
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide."
 
-good_images = []
+'''Starting and Exiting the Skill'''
 
-@ask.intent("HelloIntent")
-def hello():
-    return statement("Hello friendo!")
-
-
+# This function is ran when the skill starts.
+# Initializes the session attributes instruction num, source state, and image num
+# Asks the user if they want to resume a previous project or if they have no bookmarks what they want to fix
 @ask.launch
 def start_skill():
     session.attributes[INSTRUCTION_NUM] = -1
@@ -49,7 +49,32 @@ def start_skill():
         return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
     return question('Would you like to continue a previous project or manage your bookmarks?').reprompt('Say yes to continue an old project or say no to start a new one.')
 
+@ask.intent("AMAZON.StopIntent")
+@ask.intent("AMAZON.NoIntent")
+def no_intent():
+    global guide
+    if get_state() == START:
+        return question('What do you want to fix today?').reprompt(
+            "Sorry, I missed that. What do you want to fix today?")
 
+    if get_state() == INSTRUCTIONS and guide != None and session.attributes[INSTRUCTION_NUM] != -1:
+        set_state(NO)
+        return question('Do you want to save your location in the guide?').reprompt(
+            "Sorry, I missed that. Do you want to save your locatoin in the guide?")
+    set_state(NO)
+    session.attributes[INSTRUCTION_NUM] = -1
+    guide = None
+    return statement("Goodbye")
+
+# Easter Egg (no functional purpose)
+@ask.intent("HelloIntent")
+def hello():
+    return statement("Hello friendo!")
+
+'''Bookmarking Section'''
+
+# If the user says "Yes" when we ask if they want to resume a previous function, we tell them what the bookmarks are
+# If the user says "Yes" when we ask if they want to save the project, we save it in the database and say goodbye
 @ask.intent("AMAZON.YesIntent")
 def yes_intent():
     if get_state() == START:
@@ -61,7 +86,7 @@ def yes_intent():
         guide = None
         return statement("Your guide has been bookmarked. Goodbye.")
 
-
+# This intent is where we select the bookmark the user said (based on the number), and start reading instructions!
 @ask.intent("ResumeBookmark")
 def resume_bookmark(bookmark_number):
     index = int(bookmark_number) - 1
@@ -79,7 +104,7 @@ def resume_bookmark(bookmark_number):
     set_state(INSTRUCTIONS)
     return next_intent()
 
-
+# This deletes the bookmark the user wants to delete (based on the number they said)
 @ask.intent("DeleteBookmark")
 def delete_bookmark(bookmark_number):
     index = int(bookmark_number) - 1
@@ -94,7 +119,7 @@ def delete_bookmark(bookmark_number):
                 })
     return list_bookmarks()
 
-
+# This function retrieves the bookmarks from the database, and lists them to the user so they can pick one
 def list_bookmarks():
     table = get_database_table()
     user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})["Item"]
@@ -106,6 +131,7 @@ def list_bookmarks():
     return question("Select which bookmark number to resume or delete").simple_card(title="Bookmarks",
                                                 content=output).reprompt("Can you repeat that?")
 
+'''Selecting a Guide'''
 
 @ask.intent("SearchIntent")
 def search(item):
@@ -132,7 +158,6 @@ def search(item):
     else:
         return error_exit()
 
-
 @ask.intent("SelectGuideIntent")
 def select_guide(guide_number):
     if get_state() == SEARCH or get_state() == SELECT_GUIDE:
@@ -143,23 +168,6 @@ def select_guide(guide_number):
         return question("Please select a valid guide.").reprompt("You must state the number next to the guide title on the list sent to your phone.")
     else:
         return error_exit()
-
-
-@ask.intent("AMAZON.StopIntent")
-@ask.intent("AMAZON.NoIntent")
-def no_intent():
-    global guide
-    if get_state() == START:
-        return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
- 
-    if get_state() == INSTRUCTIONS and guide != None and session.attributes[INSTRUCTION_NUM] != -1:
-        set_state(NO)
-        return question('Do you want to save your location in the guide?').reprompt("Sorry, I missed that. Do you want to save your locatoin in the guide?")
-    set_state(NO)
-    session.attributes[INSTRUCTION_NUM] = -1
-    guide = None
-    return statement("Goodbye")
-
 
 def save_bookmark():
     table = get_database_table()
@@ -186,8 +194,6 @@ def save_bookmark():
                     'bookmarks': bookmarks
                 })
 
-
-
 @ask.intent("AMAZON.RepeatIntent")
 def repeat_intent():
     instruction_num = session.attributes[INSTRUCTION_NUM]
@@ -196,7 +202,6 @@ def repeat_intent():
     if instruction_num > len(steps):
         return question(done_steps)
     return question(text_for_step(steps[instruction_num])).reprompt("Say next when you are ready to begin the next step.")
-
 
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
@@ -234,7 +239,6 @@ def next_intent():
     logger.error("State not correct")
     return error_exit()
 
-
 @ask.intent("AMAZON.PreviousIntent")
 def previous_intent():
     if get_state() == INSTRUCTIONS:
@@ -251,18 +255,6 @@ def previous_intent():
         return question(text_for_step(steps[instruction_num])).reprompt("Say next to proceed to the next step.")
     else:
         return error_exit()
-
-'''
-HELP = 'help'
-START = 'start'
-SEARCH = 'search'
-SELECT_GUIDE = 'select_guide'
-YES = 'yes'
-NO = 'no'
-NEXT = 'next'
-PREVIOUS = 'previous'
-'''
-
 
 @ask.intent("HelpIntent")
 def help_intent():
@@ -291,7 +283,6 @@ def len_of_guide_intent(len_guide_number):
 
     return question("The length of this guide is %i hours %i minutes and %i seconds" %(hours, minutes, seconds)).reprompt("Say next to continue to the instructions.")
 
-
 # Number of instructions
 @ask.intent("NumberInstructionsIntent")
 def num_instructions_intent():
@@ -317,7 +308,6 @@ def instructions_left_intent():
 def difficulty_intent():
     return question("The difficulty of the guide is " + guide.difficulty).reprompt("Say next to continue to the instructions.")
 
-
 @ask.intent("NextPicture")
 def next_picture_intent():
     image_num = session.attributes[IMAGE_NUM]
@@ -332,7 +322,6 @@ def next_picture_intent():
     return question(text).simple_card(title="Step %i" % (instruction_num + 1) + text,
                                       content=image.original).reprompt("I didn't catch that. "
                                                                        "Can you please repeat what you said?")
-
 
 @ask.intent("FlagsIntent")
 def flags_intent():
@@ -349,7 +338,6 @@ def get_guides(search):
     global guides
     guides = Category(search).guides
 
-
 def select_guide_index(index):
     global guide
     global steps
@@ -360,7 +348,6 @@ def select_guide_index(index):
     steps = guide.steps
     session.attributes[INSTRUCTION_NUM] = -1
     return True
-
 
 def select_guide(title):
     global guide
@@ -374,13 +361,11 @@ def select_guide(title):
             found = True
     return found
 
-
 def text_for_step(step):
     step_text = ""
     for line in step.lines:
         step_text = "{}\n{}".format(step_text, line.text)
     return step_text
-
 
 def get_guide_titles():
     titles = [g.title for g in guides]
@@ -390,10 +375,8 @@ def get_guide_titles():
 def get_state():
     return session.attributes.get(SOURCE_STATE)
 
-
 def set_state(state):
     session.attributes[SOURCE_STATE] = state
-
 
 def error_exit():
     # TODO: Return to source state's intent
