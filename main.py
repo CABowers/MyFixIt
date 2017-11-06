@@ -2,6 +2,7 @@ from flask import Flask
 from flask_ask import Ask, statement, question, session
 from pyfixit import *
 import logging
+import boto3
 
 logger = logging.getLogger()
 
@@ -16,33 +17,153 @@ SEARCH = 'search'
 SELECT_GUIDE = 'select_guide'
 YES = 'yes'
 NO = 'no'
+
 INSTRUCTIONS = 'instructions'
 INSTRUCTION_NUM = 'instruction_num'
 IMAGE_NUM = 'image_num'
 
+#Global variables
 steps = []
 guide = None
 guides = None
+good_images = []
 
 # Strings used for responses so no need to store as session attributes
 no_steps = "There are no previous instructions."
 done_steps = "You have completed the guide."
 
-good_images = []
+'''Starting and Exiting the Skill'''
 
-@ask.intent("HelloIntent")
-def hello():
-    return statement("Hello friendo!")
-
-
+# This function is ran when the skill starts.
+# Initializes the session attributes instruction num, source state, and image num
+# Asks the user if they want to resume a previous project or if they have no bookmarks what they want to fix
 @ask.launch
 def start_skill():
     session.attributes[INSTRUCTION_NUM] = -1
     session.attributes[SOURCE_STATE] = START
-    session.attributes[IMAGE_NUM] = 0;
-    return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
+    session.attributes[IMAGE_NUM] = 0
 
+    table = get_database_table()
+    user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
+    if user_entry is None or 'Item' not in user_entry or len(user_entry['Item']["bookmarks"]) == 0:
+        return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
+    return question('Would you like to continue a previous project or manage your bookmarks?').reprompt('Say yes to continue an old project or say no to start a new one.')
 
+# If you just started, reprompts to ask what you want to fix today
+# If you are in the middle of a guide, asks if you want to save your current guide (bookmarking)
+# Otherwise, it exits the application
+@ask.intent("AMAZON.StopIntent")
+@ask.intent("AMAZON.NoIntent")
+def no_intent():
+    global guide
+    if get_state() == START:
+        return question('What do you want to fix today?').reprompt(
+            "Sorry, I missed that. What do you want to fix today?")
+
+    if get_state() == INSTRUCTIONS and guide != None and session.attributes[INSTRUCTION_NUM] != -1:
+        set_state(NO)
+        return question('Do you want to save your location in the guide?').reprompt(
+            "Sorry, I missed that. Do you want to save your locatoin in the guide?")
+    set_state(NO)
+    session.attributes[INSTRUCTION_NUM] = -1
+    guide = None
+    return statement("Goodbye")
+
+# Easter Egg (no functional purpose)
+@ask.intent("HelloIntent")
+def hello():
+    return statement("Hello friendo!")
+
+'''Bookmarking Section'''
+
+# If the user says "Yes" when we ask if they want to resume a previous function, we tell them what the bookmarks are
+# If the user says "Yes" when we ask if they want to save the project, we save it in the database and say goodbye
+@ask.intent("AMAZON.YesIntent")
+def yes_intent():
+    if get_state() == START:
+        return list_bookmarks()
+    if get_state() == NO:
+        save_bookmark()
+        session.attributes[INSTRUCTION_NUM] = -1
+        global guide
+        guide = None
+        return statement("Your guide has been bookmarked. Goodbye.")
+
+# This intent is where we select the bookmark the user said (based on the number), and start reading instructions
+@ask.intent("ResumeBookmark")
+def resume_bookmark(bookmark_number):
+    index = int(bookmark_number) - 1
+    table = get_database_table()
+    user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})["Item"]
+    bookmarks = user_entry["bookmarks"]
+    if index < 0 or index >= len(bookmarks):
+        return question("Select a valid bookmark").reprompt("Select a valid bookmark")
+    guide_id = bookmarks[index]['guide_id']
+    global guide
+    guide = Guide(guide_id)
+    global steps
+    steps = guide.steps
+    session.attributes[INSTRUCTION_NUM] = int(bookmarks[index]['step']) - 1
+    set_state(INSTRUCTIONS)
+    return next_intent()
+
+# This deletes the bookmark the user wants to delete (based on the number they said)
+@ask.intent("DeleteBookmark")
+def delete_bookmark(bookmark_number):
+    index = int(bookmark_number) - 1
+    table = get_database_table()
+    bookmarks = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})["Item"]['bookmarks']
+    if index > 0 and index < len(bookmarks):
+        del bookmarks[index]
+        table.put_item(TableName='Bookmark', 
+                Item={
+                    'user_id': "%s" % session['user']['userId'],
+                    'bookmarks': bookmarks
+                })
+    return list_bookmarks()
+
+# This function retrieves the bookmarks from the database, and lists them to the user so they can pick one
+def list_bookmarks():
+    table = get_database_table()
+    user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})["Item"]
+    output = ""
+    num = 1
+    for bookmark in user_entry["bookmarks"]:
+        output += "{}. Step {} for {}\n".format(num, bookmark["step"], bookmark["guide_title"])
+        num += 1
+    return question("Select which bookmark number to resume or delete").simple_card(title="Bookmarks",
+                                                content=output).reprompt("Can you repeat that?")
+
+# This helper function saves the current project to the database so the user can resume their project later
+def save_bookmark():
+    table = get_database_table()
+    user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
+    if user_entry is None or 'Item' not in user_entry:
+        table.put_item(TableName='Bookmark',
+                       Item={'user_id': "%s" % session['user']['userId'],
+                             'bookmarks': [{
+                                'guide_id': guide.id,
+                                'guide_title': guide.title,
+                                'step': session.attributes[INSTRUCTION_NUM]
+                             }]
+                            })
+    else:
+        bookmarks = user_entry["Item"]['bookmarks']
+        bookmarks.append({
+                            'guide_id': guide.id,
+                            'guide_title': guide.title,
+                            'step': session.attributes[INSTRUCTION_NUM]
+                         })
+        table.put_item(TableName='Bookmark',
+                Item={
+                    'user_id': "%s" % session['user']['userId'],
+                    'bookmarks': bookmarks
+                })
+
+'''Selecting a Guide'''
+
+# Searches the ifixit API for the item the user wants to fix
+# Returns the list of search results
 @ask.intent("SearchIntent")
 def search(item):
     if get_state() == START:
@@ -68,7 +189,7 @@ def search(item):
     else:
         return error_exit()
 
-
+# Uses the number to select the guide from the list. Sets this as the current guide and begins reading instructions.
 @ask.intent("SelectGuideIntent")
 def select_guide(guide_number):
     if get_state() == SEARCH or get_state() == SELECT_GUIDE:
@@ -80,15 +201,9 @@ def select_guide(guide_number):
     else:
         return error_exit()
 
+'''Reading Instructions'''
 
-@ask.intent("AMAZON.StopIntent")
-@ask.intent("AMAZON.NoIntent")
-def no_intent():
-    session.attributes[INSTRUCTION_NUM] = -1
-    set_state(NO)
-    return statement("Goodbye")
-
-
+# Rereads the current instruction
 @ask.intent("AMAZON.RepeatIntent")
 def repeat_intent():
     instruction_num = session.attributes[INSTRUCTION_NUM]
@@ -98,7 +213,7 @@ def repeat_intent():
         return question(done_steps)
     return question(text_for_step(steps[instruction_num])).reprompt("Say next when you are ready to begin the next step.")
 
-
+# Reads the next instruction
 @ask.intent("AMAZON.NextIntent")
 def next_intent():
     global good_images
@@ -135,7 +250,7 @@ def next_intent():
     logger.error("State not correct")
     return error_exit()
 
-
+# Reads the previous instruction
 @ask.intent("AMAZON.PreviousIntent")
 def previous_intent():
     if get_state() == INSTRUCTIONS:
@@ -153,18 +268,6 @@ def previous_intent():
     else:
         return error_exit()
 
-'''
-HELP = 'help'
-START = 'start'
-SEARCH = 'search'
-SELECT_GUIDE = 'select_guide'
-YES = 'yes'
-NO = 'no'
-NEXT = 'next'
-PREVIOUS = 'previous'
-'''
-
-
 @ask.intent("HelpIntent")
 def help_intent():
     previous = get_state()
@@ -178,6 +281,8 @@ def help_intent():
     elif previous == SELECT_GUIDE:
         response == "Please say next if you have selected a valid guide"
     return question(response).reprompt("I don't understand. Can you repeat that?")
+
+'''Features of Guides'''
 
 # Length of task
 @ask.intent("LengthOfGuideIntent")
@@ -232,19 +337,18 @@ def instructions_left_intent():
 def difficulty_intent():
     return question("The difficulty of the guide is " + guide.difficulty).reprompt("Say next to continue to the instructions.")
 
-
 @ask.intent("NextPicture")
 def next_picture_intent():
-    image_num = session.attributes[IMAGE_NUM];
+    image_num = session.attributes[IMAGE_NUM]
     instruction_num = session.attributes[INSTRUCTION_NUM]
     global good_images
     image_num += 1
-    session.attributes[IMAGE_NUM] = image_num;
+    session.attributes[IMAGE_NUM] = image_num
     if image_num >= len(good_images):
         return question("There are no more images for this step.")
     image = good_images[image_num]
     text = ": Image {} of {}".format(image_num + 1, len(good_images))
-    return question(text).simple_card(title="Step %i" % instruction_num + text,
+    return question(text).simple_card(title="Step %i" % (instruction_num + 1) + text,
                                       content=image.original).reprompt("I didn't catch that. "
                                                                        "Can you please repeat what you said?")
 
@@ -263,7 +367,6 @@ def get_guides(search):
     global guides
     guides = Category(search).guides
 
-
 def select_guide_index(index):
     global guide
     global steps
@@ -274,7 +377,6 @@ def select_guide_index(index):
     steps = guide.steps
     session.attributes[INSTRUCTION_NUM] = -1
     return True
-
 
 def select_guide(title):
     global guide
@@ -288,13 +390,11 @@ def select_guide(title):
             found = True
     return found
 
-
 def text_for_step(step):
     step_text = ""
     for line in step.lines:
         step_text = "{}\n{}".format(step_text, line.text)
     return step_text
-
 
 def get_guide_titles():
     titles = [g.title for g in guides]
@@ -304,18 +404,17 @@ def get_guide_titles():
 def get_state():
     return session.attributes.get(SOURCE_STATE)
 
-
 def set_state(state):
     session.attributes[SOURCE_STATE] = state
-
 
 def error_exit():
     # TODO: Return to source state's intent
     logger.info("Search state did not follow start state")
     return statement("There was an error. Goodbye")
 
+def get_database_table():
+    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+    return dynamodb.Table('Bookmark')
 
 if __name__ == '__main__':
     app.run()
-
-
