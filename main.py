@@ -129,7 +129,7 @@ def list_bookmarks():
     output = ""
     num = 1
     for bookmark in user_entry["bookmarks"]:
-        output += "{}. Step {} for {}\n".format(num, bookmark["step"], bookmark["guide_title"])
+        output += "{}. Step {} for {}\n".format(num, bookmark["step"] + 1, bookmark["guide_title"])
         num += 1
     return question("Select which bookmark number to resume or delete").simple_card(title="Bookmarks",
                                                 content=output).reprompt("Can you repeat that?")
