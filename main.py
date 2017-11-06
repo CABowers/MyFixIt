@@ -197,12 +197,17 @@ def len_of_guide_intent(len_guide_number):
 def tools_intent():
     tools_list = guide.tools
     display_list = ""
+    x = 0
     for tool in tools_list:
         if tool["text"]:
             display_list = display_list + "- " + tool["text"] + " (" + tool["quantity"] + ")\n"
-    return question("I have sent a list of tools you will need to your Alexa app.").simple_card(title="Tools Required",
+            x += 1
+    if x >= 1:
+        return question("I have sent a list of tools you will need to your Alexa app.").simple_card(title="Tools Required",
 																								content=display_list)\
-		.reprompt("Say next to continue to the next instruction.")
+		    .reprompt("Say next to continue to the next instruction.")
+    else:
+        return question("There are no tools required for this guide.").reprompt("Say next to continue to the next instruction.")
 
 
 # Number of instructions
