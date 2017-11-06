@@ -41,6 +41,7 @@ def start_skill():
     session.attributes[INSTRUCTION_NUM] = -1
     session.attributes[SOURCE_STATE] = START
     session.attributes[IMAGE_NUM] = 0
+    
     table = get_database_table()
     user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
     if user_entry is None or 'Item' not in user_entry or len(user_entry['Item']["bookmarks"]) == 0:
