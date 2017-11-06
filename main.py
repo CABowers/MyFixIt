@@ -49,6 +49,9 @@ def start_skill():
         return question('What do you want to fix today?').reprompt("Sorry, I missed that. What do you want to fix today?")
     return question('Would you like to continue a previous project or manage your bookmarks?').reprompt('Say yes to continue an old project or say no to start a new one.')
 
+# If you just started, reprompts to ask what you want to fix today
+# If you are in the middle of a guide, asks if you want to save your current guide (bookmarking)
+# Otherwise, it exits the application
 @ask.intent("AMAZON.StopIntent")
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
@@ -86,7 +89,7 @@ def yes_intent():
         guide = None
         return statement("Your guide has been bookmarked. Goodbye.")
 
-# This intent is where we select the bookmark the user said (based on the number), and start reading instructions!
+# This intent is where we select the bookmark the user said (based on the number), and start reading instructions
 @ask.intent("ResumeBookmark")
 def resume_bookmark(bookmark_number):
     index = int(bookmark_number) - 1
@@ -131,8 +134,36 @@ def list_bookmarks():
     return question("Select which bookmark number to resume or delete").simple_card(title="Bookmarks",
                                                 content=output).reprompt("Can you repeat that?")
 
+# This function saves the current project to the database so the user can resume their project later
+def save_bookmark():
+    table = get_database_table()
+    user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
+    if user_entry is None or 'Item' not in user_entry:
+        table.put_item(TableName='Bookmark',
+                       Item={'user_id': "%s" % session['user']['userId'],
+                             'bookmarks': [{
+                                'guide_id': guide.id,
+                                'guide_title': guide.title,
+                                'step': session.attributes[INSTRUCTION_NUM]
+                             }]
+                            })
+    else:
+        bookmarks = user_entry["Item"]['bookmarks']
+        bookmarks.append({
+                            'guide_id': guide.id,
+                            'guide_title': guide.title,
+                            'step': session.attributes[INSTRUCTION_NUM]
+                         })
+        table.put_item(TableName='Bookmark',
+                Item={
+                    'user_id': "%s" % session['user']['userId'],
+                    'bookmarks': bookmarks
+                })
+
 '''Selecting a Guide'''
 
+# Searches the ifixit API for the item the user wants to fix
+# Returns the list of search results
 @ask.intent("SearchIntent")
 def search(item):
     if get_state() == START:
@@ -169,30 +200,7 @@ def select_guide(guide_number):
     else:
         return error_exit()
 
-def save_bookmark():
-    table = get_database_table()
-    user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})
-    if user_entry is None or 'Item' not in user_entry:
-        table.put_item(TableName='Bookmark',
-                       Item={'user_id': "%s" % session['user']['userId'],
-                             'bookmarks': [{
-                                'guide_id': guide.id,
-                                'guide_title': guide.title,
-                                'step': session.attributes[INSTRUCTION_NUM]
-                             }]
-                            })
-    else:
-        bookmarks = user_entry["Item"]['bookmarks']
-        bookmarks.append({
-                            'guide_id': guide.id,
-                            'guide_title': guide.title,
-                            'step': session.attributes[INSTRUCTION_NUM]
-                         })
-        table.put_item(TableName='Bookmark', 
-                Item={
-                    'user_id': "%s" % session['user']['userId'],
-                    'bookmarks': bookmarks
-                })
+
 
 @ask.intent("AMAZON.RepeatIntent")
 def repeat_intent():
