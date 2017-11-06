@@ -8,7 +8,7 @@
 4. Install the requirements `pip install -r requirements.txt` with the virtual environment activated
 5. Use Allie's version of PyFixIt
     + [Clone or fork here](https://github.com/agiddings/pyfixit)
-    + `pip install git+https://github.com/agiddings/pyfixit'
+    + `pip install git+https://github.com/agiddings/pyfixit`
 
 ## Setting up Alexa Skill in the Developer Console
 1. Interaction Model:
