@@ -337,7 +337,7 @@ Args: step the string from the guide for the instruction
 Returns: A string that can be read by Alexa
 '''
 def text_for_step(step):
-    step_text = ""
+    step_text = "Step {:d} ".format(step)
     for line in step.lines:
         step_text = "{}\n{}".format(step_text, line.text)
     return step_text
