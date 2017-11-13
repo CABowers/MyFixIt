@@ -26,7 +26,6 @@ IMAGE_NUM = 'image_num'
 GUIDE_ID = 'guide_id'
 GUIDE_ID_LIST = 'guide_id_list'
 
-good_images = []
 
 # Strings used for responses so no need to store as session attributes
 no_steps = "There are no previous instructions."
@@ -141,8 +140,7 @@ def resume_bookmark(bookmark_number):
     if index < 0 or index >= len(bookmarks):
         return question("Select a valid bookmark").reprompt("Select a valid bookmark")
     guide_id = bookmarks[index]['guide_id']
-    session.attributes[GUIDE_ID] = guide_id
-    guide = Guide(guide_id)
+    session.attributes[GUIDE_ID] = int(str(guide_id))
     session.attributes[INSTRUCTION_NUM] = int(bookmarks[index]['step']) - 1
     set_state(INSTRUCTIONS)
     return next_intent()
@@ -166,14 +164,14 @@ def delete_bookmark(bookmark_number):
                            'user_id': "%s" % session['user']['userId'],
                            'bookmarks': bookmarks
                        })
-    return list_bookmarks()
+    return list_bookmarks("Deleted bookmark {}. ".format(index + 1))
 
 
 '''This function retrieves the bookmarks from the database, and lists them to the user so they can pick one
 
 Returns: Question. Prompts the user to select which item they would like to delete or select, and lists the bookmarks.
 '''
-def list_bookmarks():
+def list_bookmarks(prefix = None):
     table = get_database_table()
     user_entry = table.get_item(TableName='Bookmark', Key={'user_id': session['user']['userId']})["Item"]
     output = ""
@@ -181,8 +179,11 @@ def list_bookmarks():
     for bookmark in user_entry["bookmarks"]:
         output += "{}. Step {} for {}\n".format(num, bookmark["step"] + 1, bookmark["guide_title"])
         num += 1
-    return question("Select which bookmark number to resume or delete").simple_card(title="Bookmarks",
-                                                                                    content=output).reprompt(
+    response = "Select which bookmark number to resume or delete"
+    if prefix != None:
+        response = prefix + response
+
+    return question(response).simple_card(title="Bookmarks", content=output).reprompt(
         "Can you repeat that?")
 
 
@@ -266,6 +267,7 @@ def select_guide(guide_number):
         found = select_guide_index(int(guide_number) - 1)
         set_state(SELECT_GUIDE)
         if found:
+            guide = Guide(session.attributes[GUIDE_ID])
             return question("You have selected guide {} . Say next to begin instructions".format(guide.title)).reprompt(
                 "Please say next to continue.")
         return question("Please select a valid guide.").reprompt(
@@ -279,7 +281,7 @@ def select_guide(guide_number):
 Args: search the word used to search for guides
 '''
 def get_guides(search):
-    session.attribute[GUIDE_ID_LIST] = [g.id for g in Category(search).guides]
+    session.attributes[GUIDE_ID_LIST] = [g.id for g in Category(search).guides]
 
 
 '''Initializes the guide variable based on the given index
@@ -290,7 +292,7 @@ Returns: True if the guide exists
          False if the index is out of range
 '''
 def select_guide_index(index):
-    guides = session.attribute[GUIDE_ID_LIST]
+    guides = session.attributes[GUIDE_ID_LIST]
     if index < 0 or index >= len(guides):
         logger.info("Guide number was not available!")
         return False
@@ -338,7 +340,7 @@ Args: step the string from the guide for the instruction
 Returns: A string that can be read by Alexa
 '''
 def text_for_step(step):
-    step_text = "Step {:d} ".format(step)
+    step_text = "Step {} ".format(session.attributes[INSTRUCTION_NUM] + 1)
     for line in step.lines:
         step_text = "{}\n{}".format(step_text, line.text)
     return step_text
@@ -384,10 +386,14 @@ def next_intent():
             session.attributes[INSTRUCTION_NUM] -= 1
             return question(done_steps).reprompt("I missed that." + done_steps)
         session.attributes[INSTRUCTION_NUM] = instruction_num
+        reply = text_for_step(steps[instruction_num])
+        # Currently commented out due to iFixIt Hosing issue: See next_picture_intent()
+        '''
         good_images = []
         for image in steps[instruction_num].media:
             if image.original:
                 good_images.append(image)
+        session.attributes['good_images'] = good_images
         if len(good_images) > 1:
             reply = "We have sent the first of %i images to your Alexa app. To get the next image say next image" \
                     % len(good_images) \
@@ -397,10 +403,18 @@ def next_intent():
                     + text_for_step(steps[instruction_num])
         elif len(good_images) == 0:
             return question(text_for_step(steps[instruction_num])).reprompt("Can you repeat that?")
+        '''
+        # Add this between question and reprompt
+        '''    
+        .standard_card(title="Step %i" % (instruction_num + 1),
+                                           text="",
+                                           small_image_url=good_images[0].original,
+                                           large_image_url=good_images[0].original)
+        '''
 
         if reply:
-            return question(reply).simple_card(title="Step %i" % (instruction_num + 1),
-                                               content=good_images[0].original).reprompt("Can you repeat that?")
+            return question(reply).reprompt("Can you repeat that?")
+
         else:
             logger.error("good_images was not set correctly!")
     logger.error("State not correct")
@@ -442,18 +456,37 @@ Returns: Question(The length of this guide is [guide length])
 '''
 @ask.intent("LengthOfGuideIntent")
 def len_of_guide_intent(len_guide_number):
-    guide = Guide(session.attributes[GUIDE_ID])
-    if isinstance(len_guide_number, int):
-        length = select_guide_index(len_guide_number)
-    else:
-        length = guide.time_required_min
+    guide = Guide(session.attributes[GUIDE_ID_LIST][int(len_guide_number) - 1])
+    length = guide.time_required_min
+    if length == -1:
+         return question("No time estimage available.").reprompt("Choose a guide")
+
     hours = length / (60 * 24)
     minutes = (length % (60 * 24)) / 60
     seconds = length % 60
 
-    return question(
-        "The length of this guide is %i hours %i minutes and %i seconds" % (hours, minutes, seconds)).reprompt(
-        "Say next to continue to the instructions.")
+    response = ""
+    if hours != 0 and minutes != 0 and seconds != 0: 
+        response = "This guide is %i %s %i %s and %i %s in length." % (hours, "hours" if hours != 1 else "hour", 
+                                                                            minutes, "minutes" if minutes != 1 else "minute",
+                                                                            seconds, "seconds" if seconds != 1 else "second")
+    elif hours != 0 and minutes != 0: 
+        response = "This guide is %i %s and %i %s in length." % (hours, "hours" if hours != 1 else "hour", 
+                                                                            minutes, "minutes" if minutes != 1 else "minute")
+    elif hours != 0 and seconds != 0: 
+        response = "This guide is %i %s and %i %s in length." % (hours, "hours" if hours != 1 else "hour", 
+                                                                        seconds, "seconds" if seconds != 1 else "second")
+    elif minutes != 0 and seconds != 0: 
+        response = "This guide is %i %s and %i %s in length." % (minutes, "minutes" if minutes != 1 else "minute", 
+                                                                        seconds, "seconds" if seconds != 1 else "second")
+    elif hours != 0: 
+        response = "This guide is %i %s in length." % (hours, "hours" if hours != 1 else "hour")
+    elif minutes != 0: 
+        response = "This guide is %i %s in length." % (minutes, "minutes" if minutes != 1 else "minute")
+    else: 
+        response = "This guide is %i %s in length." % (seconds, "seconds" if seconds != 1 else "second")
+
+    return question(response).reprompt("Choose a guide.")
 
 
 '''Sends a list of tools to the Alexa app if there are any
@@ -472,7 +505,7 @@ def tools_intent():
     for tool in tools_list:
         if tool["text"]:
             display_list = display_list + "- " + tool["text"] + " (%i)\n" % tool["quantity"]
-    return question("I have sent a list of tools you will need to your Alexa app.").simple_card(title="Tools Required",
+    return question("I have sent a list of tools you will need to your Alexa app. ").simple_card(title="Tools Required",
                                                                                                 content=display_list) \
         .reprompt("Say next to continue to the next instruction.")
 
@@ -485,7 +518,7 @@ Returns: Question(The number of instructions in this guide is [number of steps])
 def num_instructions_intent():
     guide = Guide(session.attributes[GUIDE_ID])
     steps = guide.steps
-    return question("The number of instructions in this guide is %i" % len(steps)).reprompt(
+    return question("There are %i instructions in this guide. " % len(steps)).reprompt(
         "Say next to continue to the instructions.")
 
 
@@ -501,7 +534,7 @@ def cur_instruction_intent():
     if num <= 0:
         return question("You have not started any instructions yet. Say next to go to the first instruction.").reprompt(
             "Say next to continue to the instructions.")
-    return question("The current instruction number for the current guide is %i" % num).reprompt(
+    return question("You are on instruction number %i. " % num).reprompt(
         "Say next to go to the next step.")
 
 
@@ -514,7 +547,7 @@ def instructions_left_intent():
     guide = Guide(session.attributes[GUIDE_ID])
     steps = guide.steps
     instructions_left = len(steps) - session.attributes[INSTRUCTION_NUM]
-    return question("The number of instructions left in this guide is %i" % instructions_left).reprompt(
+    return question("There are %i instructions left in this guide. " % instructions_left).reprompt(
         "Say next to go to the next step.")
 
 
@@ -532,20 +565,28 @@ def difficulty_intent():
 
 Returns: Question(Image and step)
 '''
+'''
+# Sample Utterances additions: NextPicture Next Picture
+# Intent Schema addition: { "intent": "NextPicture"},
+# Currently removed Picture due to iFixIt hosting issues: Comment back in when that is fixed
 @ask.intent("NextPicture")
 def next_picture_intent():
     image_num = session.attributes[IMAGE_NUM]
     instruction_num = session.attributes[INSTRUCTION_NUM]
-    global good_images
+    good_images = session.attributes['good_images']
     image_num += 1
     session.attributes[IMAGE_NUM] = image_num
     if image_num >= len(good_images):
         return question("There are no more images for this step.")
     image = good_images[image_num]
     text = ": Image {} of {}".format(image_num + 1, len(good_images))
-    return question(text).simple_card(title="Step %i" % (instruction_num + 1) + text,
-                                      content=image.original).reprompt("I didn't catch that. "
+    return question(text).standard_card(title="Step %i" % (instruction_num + 1) + text,
+                                               text="",
+                                               small_image_url=image.original,
+                                               large_image_url=image.original).reprompt("I didn't catch that. "
                                                                        "Can you please repeat what you said?")
+    
+'''
 
 
 '''Informs the user of any flags associated with a guide
