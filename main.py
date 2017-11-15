@@ -513,7 +513,7 @@ def tools_intent(tools_guide_number):
     if tools_guide_number < 1:
         guide = Guide(session.attributes[GUIDE_ID])
     else:
-        guide = Guide(session.attributes[GUIDE_ID_LIST][int(len_guide_number) - 1])
+        guide = Guide(session.attributes[GUIDE_ID_LIST][int(tools_guide_number) - 1])
     if guide.tools is None:
         return question("There are no tools required for this guide.").reprompt(
             "Say next to continue to the next instruction.")
