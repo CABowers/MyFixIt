@@ -456,37 +456,51 @@ Returns: Question(The length of this guide is [guide length])
 '''
 @ask.intent("LengthOfGuideIntent")
 def len_of_guide_intent(len_guide_number):
-    guide = Guide(session.attributes[GUIDE_ID_LIST][int(len_guide_number) - 1])
-    length = guide.time_required_min
-    if length == -1:
-         return question("No time estimage available.").reprompt("Choose a guide")
+    if len_guide_number < 1:
+        guide = Guide(session.attributes[GUIDE_ID])
+    else:
+        guide = Guide(session.attributes[GUIDE_ID_LIST][int(len_guide_number) - 1])
+    minlength = guide.time_required_min
+    maxlength = guide.time_required_max
+    if minlength == -1 and maxlength == -1:
+         return question("No time estimate available.").reprompt("Choose a guide")
 
-    hours = length / (60 * 24)
-    minutes = (length % (60 * 24)) / 60
-    seconds = length % 60
+    response = length_response(minlength / (60 * 24), minlength % (60 * 24) / 60, minlength % 60, True)
+    response += length_response(maxlength / (60 * 24), maxlength % (60 * 24) / 60, maxlength % 60, False)
+    return question(response).reprompt("Choose a guide.")
 
-    response = ""
-    if hours != 0 and minutes != 0 and seconds != 0: 
-        response = "This guide is %i %s %i %s and %i %s in length." % (hours, "hours" if hours != 1 else "hour", 
+
+'''Function that creates the string response for the length of guide intent
+
+Args: Hours, minutes, seconds for the time estimate. isMin is true if it is the minimum time, false if it is the maximum time.
+
+Returns: Response string
+'''
+def length_response(hours, minutes, seconds, isMin):
+    if isMin:
+        range = 'minimum'
+    else:
+        range = 'maximum'
+    if hours != 0 and minutes != 0 and seconds != 0:
+        response = "This guide has a %s length of %i %s %i %s." % (range, hours, "hours" if hours != 1 else "hour",
                                                                             minutes, "minutes" if minutes != 1 else "minute",
                                                                             seconds, "seconds" if seconds != 1 else "second")
-    elif hours != 0 and minutes != 0: 
-        response = "This guide is %i %s and %i %s in length." % (hours, "hours" if hours != 1 else "hour", 
+    elif hours != 0 and minutes != 0:
+        response = "This guide has a %s length of %i %s and %i %s." % (range, hours, "hours" if hours != 1 else "hour",
                                                                             minutes, "minutes" if minutes != 1 else "minute")
-    elif hours != 0 and seconds != 0: 
-        response = "This guide is %i %s and %i %s in length." % (hours, "hours" if hours != 1 else "hour", 
+    elif hours != 0 and seconds != 0:
+        response = "This guide has a %s length of %i %s and %i %s." % (range, hours, "hours" if hours != 1 else "hour",
                                                                         seconds, "seconds" if seconds != 1 else "second")
-    elif minutes != 0 and seconds != 0: 
-        response = "This guide is %i %s and %i %s in length." % (minutes, "minutes" if minutes != 1 else "minute", 
+    elif minutes != 0 and seconds != 0:
+        response = "This guide has a %s length of %i %s and %i %s." % (range, minutes, "minutes" if minutes != 1 else "minute",
                                                                         seconds, "seconds" if seconds != 1 else "second")
-    elif hours != 0: 
-        response = "This guide is %i %s in length." % (hours, "hours" if hours != 1 else "hour")
-    elif minutes != 0: 
-        response = "This guide is %i %s in length." % (minutes, "minutes" if minutes != 1 else "minute")
-    else: 
-        response = "This guide is %i %s in length." % (seconds, "seconds" if seconds != 1 else "second")
-
-    return question(response).reprompt("Choose a guide.")
+    elif hours != 0:
+        response = "This guide has a %s length of %i %s." % (range, hours, "hours" if hours != 1 else "hour")
+    elif minutes != 0:
+        response = "This guide has a %s length of %i %s." % (range, minutes, "minutes" if minutes != 1 else "minute")
+    else:
+        response = "This guide has a %s length of %i %s." % (range, seconds, "seconds" if seconds != 1 else "second")
+    return response
 
 
 '''Sends a list of tools to the Alexa app if there are any
@@ -495,8 +509,11 @@ Returns: Question(There are no tools for this guide)
          Question(I have sent a list of tools to the alexa app [tools])
 '''
 @ask.intent("ToolsIntent")
-def tools_intent():
-    guide = Guide(session.attributes[GUIDE_ID])
+def tools_intent(tools_guide_number):
+    if tools_guide_number < 1:
+        guide = Guide(session.attributes[GUIDE_ID])
+    else:
+        guide = Guide(session.attributes[GUIDE_ID_LIST][int(len_guide_number) - 1])
     if guide.tools is None:
         return question("There are no tools required for this guide.").reprompt(
             "Say next to continue to the next instruction.")
