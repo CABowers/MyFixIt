@@ -34,7 +34,7 @@
       "intent": "InstructionsLeftIntent"
     },
     {
-        "slots": [
+      "slots": [
         {
           "name": "tools_guide_number",
           "type": "AMAZON.NUMBER"
