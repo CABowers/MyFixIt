@@ -17,10 +17,10 @@ SEARCH = 'search'
 SELECT_GUIDE = 'select_guide'
 YES = 'yes'
 NO = 'no'
+INSTRUCTIONS = 'instructions'
 
 # Global variables
 
-INSTRUCTIONS = 'instructions'
 INSTRUCTION_NUM = 'instruction_num'
 IMAGE_NUM = 'image_num'
 GUIDE_ID = 'guide_id'
@@ -75,7 +75,7 @@ Returns: If in start state. Question(What do you want to fix today?)
          If they are in a guide. Question(Do you want to save the guide?)
          Otherwise. Statement(Goodbye)
 '''
-@ask.intent("AMAZON.StopIntent")
+
 @ask.intent("AMAZON.NoIntent")
 def no_intent():
     guide = None
@@ -85,6 +85,27 @@ def no_intent():
         return question('What do you want to fix today?').reprompt(
             "Sorry, I missed that. What do you want to fix today?")
 
+    if get_state() == INSTRUCTIONS and guide is not None and session.attributes[INSTRUCTION_NUM] != -1:
+        set_state(NO)
+        return question('Do you want to save your location in the guide?').reprompt(
+            "Sorry, I missed that. Do you want to save your location in the guide?")
+    set_state(NO)
+    session.attributes[INSTRUCTION_NUM] = -1
+    session.attributes[GUIDE_ID] = -1
+    return statement("Goodbye")
+
+
+''' Stops the guide and asks if they want to save the location of the guide
+Returns: If they are in a guide. Question(Do you want to save the guide?)
+         Otherwise. Statement(Goodbye)
+'''
+@ask.intent("AMAZON.CancelIntent") # cancel could be used in the future to cancel an in skill task but remain in the skill
+@ask.intent("AMAZON.StopIntent")
+def stop_intent():
+    guide = None
+    if (session.attributes[GUIDE_ID] != -1):
+        guide = Guide(session.attributes[GUIDE_ID])
+    
     if get_state() == INSTRUCTIONS and guide is not None and session.attributes[INSTRUCTION_NUM] != -1:
         set_state(NO)
         return question('Do you want to save your location in the guide?').reprompt(
@@ -231,7 +252,7 @@ def search(item):
     if get_state() == START:
         if item is None:
             logger.info("Item is None")
-            start_skill()
+            return no_intent() # Will ask to re-search
         else:
             get_guides(item)
         try:
@@ -248,7 +269,7 @@ def search(item):
             logger.info(str(e))
 
         set_state(SEARCH)
-        return question("Here are your search results. Please select a guide by selecting the corresponding number.") \
+        return question("A list of guides has been sent to your device. Please say the number of the guide you want to begin.") \
             .simple_card(title="Guides", content=guide_names)
     else:
         return error_exit()

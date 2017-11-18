@@ -1,6 +1,5 @@
 SearchIntent Search {item}
 SearchIntent Search for {item}
-SearchIntent {item}
 SearchIntent my {item}
 SearchIntent I want to fix my {item}
 DifficultyIntent What is the difficulty
