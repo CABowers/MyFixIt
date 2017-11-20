@@ -1,9 +1,6 @@
 {
   "intents": [
     {
-      "intent": "NextPicture"
-    },
-    {
       "intent": "HelloIntent"
     },
     {
@@ -15,6 +12,9 @@
     {
       "intent": "AMAZON.StopIntent"
     },
+    {
+      "intent": "AMAZON.CancelIntent"
+    }.
     {
       "intent": "AMAZON.RepeatIntent"
     },
@@ -37,6 +37,12 @@
       "intent": "InstructionsLeftIntent"
     },
     {
+      "slots": [
+        {
+          "name": "tools_guide_number",
+          "type": "AMAZON.NUMBER"
+        }
+      ],
       "intent": "ToolsIntent"
     },
     {

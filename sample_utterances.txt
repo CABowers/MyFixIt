@@ -1,13 +1,12 @@
-NextPicture Next Picture
 SearchIntent Search {item}
 SearchIntent Search for {item}
-SearchIntent {item}
 SearchIntent my {item}
 SearchIntent I want to fix my {item}
 DifficultyIntent What is the difficulty
 SelectGuideIntent {guide_number}
 SelectGuideIntent Guide number {guide_number}
 LengthOfGuideIntent What is the length of guide {len_guide_number}
+LengthOfGuideIntent How long is this guide
 HelpIntent Help
 HelpIntent I don't know what to do
 FlagsIntent What are the flags
@@ -15,5 +14,6 @@ NumberInstructionsIntent How many instructions are there
 CurrentInstructionIntent What instruction number am I on
 InstructionsLeftIntent How many instructions are left
 ToolsIntent What tools will I need
+ToolsIntent What tools will I need for guide {tools_guide_number}
 ResumeBookmark Resume Bookmark {bookmark_number}
 DeleteBookmark Delete Bookmark {bookmark_number}
