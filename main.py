@@ -555,7 +555,7 @@ def tools_intent(tools_guide_number):
             return question("That was an invalid guide number").reprompt("Choose a guide.")
         else:
             guide = Guide(session.attributes[GUIDE_ID_LIST][int(tools_guide_number) - 1])
-        if guide.tools is None:
+        if guide.tools is None or len(guide.tools) == 0:
             return question("There are no tools required for this guide.").reprompt(
                 "Say next to continue to the next instruction.")
         tools_list = guide.tools
