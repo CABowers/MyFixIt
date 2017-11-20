@@ -483,7 +483,7 @@ Returns: Question(The length of this guide is [guide length])
 '''
 @ask.intent("LengthOfGuideIntent")
 def len_of_guide_intent(len_guide_number):  
-    if get_state() is INSTRUCTIONS or get_state() is SEARCH:
+    if get_state() == INSTRUCTIONS or get_state() == SEARCH or get_state() == SELECT_GUIDE:
         if len_guide_number is None:
             guide = Guide(session.attributes[GUIDE_ID])
         elif int(len_guide_number) - 1 >= len(session.attributes[GUIDE_ID_LIST]) or int(len_guide_number) - 1 < 0:
@@ -548,7 +548,8 @@ Returns: Question(There are no tools for this guide)
 '''
 @ask.intent("ToolsIntent")
 def tools_intent(tools_guide_number):
-    if get_state() is INSTRUCTIONS or get_state() is SEARCH:
+    logger.info(get_state())
+    if get_state() == INSTRUCTIONS or get_state() == SEARCH or get_state() == SELECT_GUIDE:
         if tools_guide_number is None:
             guide = Guide(session.attributes[GUIDE_ID])
         elif int(tools_guide_number) - 1 >= len(session.attributes[GUIDE_ID_LIST]) or int(tools_guide_number) - 1 < 0:
@@ -577,7 +578,7 @@ Returns: Question(The number of instructions in this guide is [number of steps])
 '''
 @ask.intent("NumberInstructionsIntent")
 def num_instructions_intent():
-    if get_state() is INSTRUCTIONS or get_state() is SEARCH:
+    if get_state() == INSTRUCTIONS or get_state() == SEARCH or get_state() == SELECT_GUIDE:
         guide = Guide(session.attributes[GUIDE_ID])
         steps = guide.steps
         return question("There are %i instructions in this guide. " % len(steps)).reprompt(
@@ -593,7 +594,7 @@ Returns: Question(You have not started any instructions yet)
 '''
 @ask.intent("CurrentInstructionIntent")
 def cur_instruction_intent():
-    if get_state() is INSTRUCTIONS or get_state() is SEARCH:
+    if get_state() == INSTRUCTIONS or get_state() == SEARCH or get_state() == SELECT_GUIDE:
         num = session.attributes[INSTRUCTION_NUM]
         num = num + 1
         if num <= 0:
@@ -612,7 +613,7 @@ Returns: Question(The number of instructions left in this guide is [number of in
 '''
 @ask.intent("InstructionsLeftIntent")
 def instructions_left_intent():
-    if get_state() is INSTRUCTIONS or get_state() is SEARCH:
+    if get_state() == INSTRUCTIONS or get_state() == SEARCH or get_state() == SELECT_GUIDE:
         guide = Guide(session.attributes[GUIDE_ID])
         steps = guide.steps
         instructions_left = len(steps) - session.attributes[INSTRUCTION_NUM]
@@ -628,7 +629,7 @@ Returns: Question(The difficulty of this guide is [difficulty])
 '''
 @ask.intent("DifficultyIntent")
 def difficulty_intent():
-    if get_state() is INSTRUCTIONS or get_state() is SEARCH:
+    if get_state() == INSTRUCTIONS or get_state() == SEARCH or get_state() == SELECT_GUIDE:
         guide = Guide(session.attributes[GUIDE_ID])
         return question("The difficulty of the guide is " + guide.difficulty).reprompt(
             "Say next to continue to the instructions.")
@@ -671,7 +672,7 @@ Returns: question(The flags for this guide are)
 '''
 @ask.intent("FlagsIntent")
 def flags_intent():
-    if get_state() is INSTRUCTIONS or get_state() is SEARCH:
+    if get_state() == INSTRUCTIONS or get_state() == SEARCH or get_state() == SELECT_GUIDE:
         guide = None
         if session.attributes[GUIDE_ID] != -1:
             guide = Guide(session.attributes[GUIDE_ID])
