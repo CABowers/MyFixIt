@@ -14,7 +14,7 @@
     },
     {
       "intent": "AMAZON.CancelIntent"
-    }.
+    },
     {
       "intent": "AMAZON.RepeatIntent"
     },
