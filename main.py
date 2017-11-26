@@ -191,6 +191,8 @@ def delete_bookmark(bookmark_number):
                            'user_id': "%s" % session['user']['userId'],
                            'bookmarks': bookmarks
                        })
+    if index < 0 or index >= len(bookmarks):
+        return question("Select a valid bookmark").reprompt("Select a valid bookmark")
     return list_bookmarks("Deleted bookmark {}. ".format(index + 1))
 
 
