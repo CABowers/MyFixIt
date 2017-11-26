@@ -292,6 +292,8 @@ Returns: Question. 'You have selected this guide. Say next to begin instructions
 @ask.intent("SelectGuideIntent")
 def select_guide(guide_number):
     if get_state() == SEARCH or get_state() == SELECT_GUIDE:
+        if guide_number is not int:
+            return question("Please say the number next to the guide title on your device. Here is an example. Guide Number One.")
         found = select_guide_index(int(guide_number) - 1)
         set_state(SELECT_GUIDE)
         if found:
@@ -533,7 +535,7 @@ Returns: Question(There are no tools for this guide)
 def tools_intent(tools_guide_number):
     logger.info(get_state())
     if get_state() == INSTRUCTIONS or get_state() == SEARCH or get_state() == SELECT_GUIDE:
-        if tools_guide_number is None:
+        if tools_guide_number is None or tools_guide_number is not int:
             guide = Guide(session.attributes[GUIDE_ID])
         elif int(tools_guide_number) - 1 >= len(session.attributes[GUIDE_ID_LIST]) or int(tools_guide_number) - 1 < 0:
             return question("That was an invalid guide number").reprompt("Please choose a a valid guide number or select a guide.")
