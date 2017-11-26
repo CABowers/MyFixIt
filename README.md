@@ -26,6 +26,7 @@ New endpoints can be made using this [zappa tutorial.](https://developer.amazon.
 If you don't feel like going through all that, feel free to use this as your service endpoint: <https://8qa3sct347.execute-api.us-east-1.amazonaws.com/dev>. It is the one I made.
 
 Cole's end point: https://dhfu6hfvyj.execute-api.us-east-1.amazonaws.com/dev
+Allie's end point: https://lv8uvnpelf.execute-api.us-east-1.amazonaws.com/dev
 
 ## PyFixIt
 We had to extend PyFixIt in order to get the right functionality. Install [our version](https://github.com/agiddings/pyfixit) of PyFixIt.

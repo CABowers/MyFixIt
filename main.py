@@ -29,7 +29,7 @@ GUIDE_ID_LIST = 'guide_id_list'
 
 # Strings used for responses so no need to store as session attributes
 no_steps = "There are no previous instructions."
-done_steps = "You have completed the guide."
+done_steps = "You have completed the guide. Do you want to save your location in the guide?"
 
 '''Contents:
 Starting and exiting the skill: start_skill, no_intent, hello, yes_intent
@@ -144,7 +144,7 @@ Returns: Otherwise. Statement(Your guide has been bookmarked. Bye)
 def yes_intent():
     if get_state() == START:
         return list_bookmarks()
-    if get_state() == NO:
+    if get_state() == NO or get_state() == INSTRUCTIONS:
         save_bookmark()
         session.attributes[INSTRUCTION_NUM] = -1
         session.attributes[GUIDE_ID] = -1
@@ -369,7 +369,7 @@ def repeat_intent():
     if instruction_num < 0:
         return question(no_steps)
     if instruction_num > len(steps):
-        return question(done_steps)
+        return question(done_steps).reprompt(done_steps)
     return question(text_for_step(steps[instruction_num])).reprompt(
         "Say next when you are ready to begin the next step.")
 
@@ -394,7 +394,7 @@ def next_intent():
         if instruction_num >= len(steps):
             instruction_num -= 1
             session.attributes[INSTRUCTION_NUM] = instruction_num
-            return question(done_steps).reprompt(done_steps + " Say stop to end the session.")
+            return question(done_steps).reprompt(done_steps)
         session.attributes[INSTRUCTION_NUM] = instruction_num
         reply = text_for_step(steps[instruction_num])
         # Currently commented out due to iFixIt Hosing issue: See next_picture_intent()
@@ -449,7 +449,7 @@ def previous_intent():
             session.attributes[INSTRUCTION_NUM] = instruction_num
             return question(no_steps).reprompt(no_steps + " Say next to proceed to the next step.")
         if instruction_num >= len(steps):
-            return question(done_steps).reprompt(done_steps + " Say stop to end the session.")
+            return question(done_steps).reprompt(done_steps)
         return question(text_for_step(steps[instruction_num])).reprompt("Say next to proceed to the next step.")
     else:
         return error_exit()
@@ -475,7 +475,7 @@ def len_of_guide_intent(len_guide_number):
             guide = Guide(session.attributes[GUIDE_ID_LIST][int(len_guide_number) - 1])
         min_length = guide.time_required_min
         max_length = guide.time_required_max
-        if min_length == -1 and maxlength == -1:
+        if min_length == -1 and max_length == -1:
              response = "No time estimate available."
         elif min_length == -1:
             response = "This guide will take " + length_response(max_length) + " to complete."
