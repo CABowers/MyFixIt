@@ -2,43 +2,42 @@
 
 ## Release Notes version MyFixIt 1.0
 ### NEW FEATURES
-	Updated help section
-	Updated flags section to give flags for guides before the guide is selected
-	Updated length of guide section to give the length of a guide after it is selected
+* Updated help section
+* Updated flags section to give flags for guides before the guide is selected
+* Updated length of guide section to give the length of a guide after it is selected
 ### BUG FIXES
-	Changed the length of guide to return a range
-	Allow user to search for a guide after they have started a guide
+* Changed the length of guide to return a range
+* Allow user to search for a guide after they have started a guide
 ### KNOWN BUGS
-	Some searches return empty results
+* Some searches return empty results
 	
 ## Install Guide MyFixIt 1.0 - Non developer
 ### PRE-REQUISITES
-	You must have downloaded the Alexa app on your phone and must be in possession of an Alexa device (Echo, dot, Fire TV, etc. PLEASE ADD MORE HERE)
+* You must have downloaded the Alexa app on your phone and must be in possession of an Alexa device (Echo, dot, Fire TV, etc. PLEASE ADD MORE HERE)
 ### DEPENDENCIES
-    None
+* None
 ### DOWNLOAD
-    None
+* None
 ### BUILD
-    None
+* None
 ### INSTALLATION
-    Use the Alexa app to get the myFixIt skill (add more details)
+* Use the Alexa app to get the myFixIt skill (add more details)
 ### RUNNING APPLICATION
-	Turn on the Alexa device and say “Alexa, open myfixit”
+* Turn on the Alexa device and say “Alexa, open myfixit”
 
 
 ## Install Guide MyFixIt 1.0 - Developer
 ### PRE-REQUISITES
-	..* Set up a Amazon Developer account at https://developer.amazon.com/
-	..* Log in or create an account
-	..* Create an Alexa Skill
+* Set up a Amazon Developer account at https://developer.amazon.com/
+* Log in or create an account
+* Create an Alexa Skill
 
+* Optional but encouraged. These steps will create a virtual environment:
+	```Pip install virtualenv
+	Virtualenv venv
+	\. Venv\bin\activate or venv\Scripts\activate```
 
-	..* Optional but encouraged. These steps will create a virtual environment:
-		```Pip install virtualenv
-		Virtualenv venv
-		\. Venv\bin\activate or venv\Scripts\activate```
-	
-	..* Create an IAM user in the AWS console
+* Create an IAM user in the AWS console
 	1. First you will need to have an Amazon account
 	2. Open the IAM console
 	3. Click the add user button
@@ -56,18 +55,20 @@
 	15. The aws configure command installs credentials and configuration in an .aws directory inside your home directory. Zappa knows how to use this configuration to create the AWS resources it needs to deploy Flask-Ask skills to Lambda.
 
 ## DEPENDENCIES
-	```pip install -r requirements.txt
-	pip install flask-ask zappa requests awscli (Might not need)
-	pip install git+https://github.com/agiddings/pyfixit```
+```
+pip install -r requirements.txt
+pip install flask-ask zappa requests awscli (Might not need)
+pip install git+https://github.com/agiddings/pyfixit
+```
 ## DOWNLOAD
-	`git clone https://github.com/CABowers/MyFixIt.git`
+`git clone https://github.com/CABowers/MyFixIt.git`
 	
 ## BUILD
-	Type `zappa init` in the command line
-	Type `zappa deploy dev` in the command line
-	Type `zappa update dev` in the command line
-	Go to Developer portal for Alexa skills and update the interaction model (Sample utterances, Intent Schema)
+* Type `zappa init` in the command line
+* Type `zappa deploy dev` in the command line
+* Type `zappa update dev` in the command line
+* Go to Developer portal for Alexa skills and update the interaction model (Sample utterances, Intent Schema)
 ## INSTALLATION
-	None, automatically done by Amazon and Zappa	
+None, automatically done by Amazon and Zappa	
 ## RUNNING APPLICATION
-	Test through Developer Portal or on Alexa enabled device
+Test through Developer Portal or on Alexa enabled device
