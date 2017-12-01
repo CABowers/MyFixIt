@@ -38,17 +38,17 @@
 	\. Venv\bin\activate or venv\Scripts\activate
 	```
 
-## DOWNLOAD
+### DOWNLOAD
 `git clone https://github.com/CABowers/MyFixIt.git`
 
-## DEPENDENCIES
+### DEPENDENCIES
 ```
 pip install -r requirements.txt
 pip install flask-ask zappa requests awscli (Might not need)
 pip install git+https://github.com/agiddings/pyfixit
 ```
 	
-## BUILD
+### BUILD
 * Create an IAM user in the AWS console
 	1. First you will need to have an Amazon account
 	2. Open the IAM console
@@ -80,9 +80,9 @@ pip install git+https://github.com/agiddings/pyfixit
 	4. Select the appropriate geographical region that is closest to your customers checkbox and enter the URL Zappa output during the deploy step in the text field. Click the Next button.
 	5. On the SSL Certificate section select the option that reads: My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority
 * Go to Developer portal for Alexa skills and update the interaction model (Sample utterances, Intent Schema)
-## INSTALLATION
+### INSTALLATION
 None, automatically done by Amazon and Zappa	
-## RUNNING APPLICATION
+### RUNNING APPLICATION
 After any change:
 ```
 zappa update
