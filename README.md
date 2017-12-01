@@ -35,8 +35,8 @@
 * Optional but encouraged. These steps will create a virtual environment:
 	```Pip install virtualenv
 	Virtualenv venv
-	\. Venv\bin\activate or venv\Scripts\activate
 	```
+	`\. Venv\bin\activate` or `venv\Scripts\activate`
 
 ### DOWNLOAD
 `git clone https://github.com/CABowers/MyFixIt.git`
