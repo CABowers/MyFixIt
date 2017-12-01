@@ -9,7 +9,8 @@
 	Changed the length of guide to return a range
 	Allow user to search for a guide after they have started a guide
 ### KNOWN BUGS
-
+	Some searches return empty results
+	
 ## Install Guide MyFixIt 1.0 - Non developer
 ### PRE-REQUISITES
 	You must have downloaded the Alexa app on your phone and must be in possession of an Alexa device (Echo, dot, Fire TV, etc. PLEASE ADD MORE HERE)
