@@ -13,7 +13,7 @@
 	
 ## Install Guide MyFixIt 1.0 - Non developer
 ### PRE-REQUISITES
-* You must have downloaded the Alexa app on your phone and must be in possession of an Alexa device (Echo, dot, Fire TV, etc. PLEASE ADD MORE HERE)
+* You must have downloaded the Alexa app on your phone and must be in possession of an Alexa device (Echo, dot, Fire TV, etc.)
 ### DEPENDENCIES
 * None
 ### DOWNLOAD
@@ -21,7 +21,7 @@
 ### BUILD
 * None
 ### INSTALLATION
-* Use the Alexa app to get the myFixIt skill (add more details)
+* Use the Alexa app to get the myFixIt skill
 ### RUNNING APPLICATION
 * Turn on the Alexa device and say “Alexa, open myfixit”
 
@@ -35,8 +35,20 @@
 * Optional but encouraged. These steps will create a virtual environment:
 	```Pip install virtualenv
 	Virtualenv venv
-	\. Venv\bin\activate or venv\Scripts\activate```
+	\. Venv\bin\activate or venv\Scripts\activate
+	```
 
+## DOWNLOAD
+`git clone https://github.com/CABowers/MyFixIt.git`
+
+## DEPENDENCIES
+```
+pip install -r requirements.txt
+pip install flask-ask zappa requests awscli (Might not need)
+pip install git+https://github.com/agiddings/pyfixit
+```
+	
+## BUILD
 * Create an IAM user in the AWS console
 	1. First you will need to have an Amazon account
 	2. Open the IAM console
@@ -53,22 +65,26 @@
 	13. For Default region name, type: us-east-1.
 	14. For Default output format accept the default by hitting the Enter key.
 	15. The aws configure command installs credentials and configuration in an .aws directory inside your home directory. Zappa knows how to use this configuration to create the AWS resources it needs to deploy Flask-Ask skills to Lambda.
-
-## DEPENDENCIES
-```
-pip install -r requirements.txt
-pip install flask-ask zappa requests awscli (Might not need)
-pip install git+https://github.com/agiddings/pyfixit
-```
-## DOWNLOAD
-`git clone https://github.com/CABowers/MyFixIt.git`
 	
-## BUILD
-* Type `zappa init` in the command line
-* Type `zappa deploy dev` in the command line
-* Type `zappa update dev` in the command line
+* Configure Zappa (in terminal)
+	1. ```
+	   zappa init
+	   zappa deploy dev
+	   zappa update dev
+	   ```
+	2. After your deploy copy the endpoint it displays. It should look like this: https://mcgalgvft5.execute-api.us-east-1.amazonaws.com/dev
+* Link the Lambda to the skill
+	1. On the developer portal go to the configuration tab on the skill page
+	2. Select HTTPS as the Service Endpoint Type. You might have noticed the other option AWS Lambda ARN seems more appropriate, but since Zappa uses API gateways for WSGI emulation, we're going to select HTTPS here.
+	3. In the Default space enter in the lambda endpoint configured in the previous steps.
+	4. Select the appropriate geographical region that is closest to your customers checkbox and enter the URL Zappa output during the deploy step in the text field. Click the Next button.
+	5. On the SSL Certificate section select the option that reads: My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority
 * Go to Developer portal for Alexa skills and update the interaction model (Sample utterances, Intent Schema)
 ## INSTALLATION
 None, automatically done by Amazon and Zappa	
 ## RUNNING APPLICATION
+After any change:
+```
+zappa update
+```
 Test through Developer Portal or on Alexa enabled device
